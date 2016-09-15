@@ -17,113 +17,141 @@ package net.tofweb.jdstarlite;
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
+ * @author Lynn Owens
+ * https://github.com/LynnOwens
  */
+public class State implements Comparable<State> {
+	private int x = 0;
+	private int y = 0;
+	private int z = 0;
+	private Pair<Double, Double> key = new Pair<Double, Double>(0.0, 0.0);
 
-public class State implements Comparable, java.io.Serializable
-{
-	public int x=0;
-	public int y=0;
-	public Pair<Double, Double> k = new Pair(0.0,0.0);
-
-
-	//Default constructor
-	public State()
-	{
+	public State() {
 
 	}
 
-	//Overloaded constructor
-	public State(int x, int y, Pair<Double,Double> k)
-	{
+	public State(int x, int y, Pair<Double, Double> k) {
 		this.x = x;
 		this.y = y;
-		this.k = k;
+		this.key = k;
+	}
+	
+	public State(int x, int y, int z, Pair<Double, Double> k) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.key = k;
 	}
 
-	//Overloaded constructor
-	public State(State other)
-	{
+	public State(State other) {
 		this.x = other.x;
 		this.y = other.y;
-		this.k = other.k;
+		this.z = other.z;
+		this.key = other.key;
 	}
 
-	//Equals
-	public boolean eq(final State s2)
-	{
-		return ((this.x == s2.x) && (this.y == s2.y));
+	public int getX() {
+		return x;
 	}
 
-	//Not Equals
-	public boolean neq(final State s2)
-	{
-		return ((this.x != s2.x) || (this.y != s2.y));
+	public void setX(int x) {
+		this.x = x;
 	}
 
-	//Greater than
-	public boolean gt(final State s2)
-	{
-		if (k.first()-0.00001 > s2.k.first()) return true;
-		else if (k.first() < s2.k.first()-0.00001) return false;
-		return k.second() > s2.k.second();
+	public int getY() {
+		return y;
 	}
 
-	//Less than or equal to
-	public boolean lte(final State s2)
-	{
-		if (k.first() < s2.k.first()) return true;
-		else if (k.first() > s2.k.first()) return false;
-		return k.second() < s2.k.second() + 0.00001;
+	public void setY(int y) {
+		this.y = y;
 	}
 
-	//Less than
-	public boolean lt(final State s2)
-	{
-		if (k.first() + 0.000001 < s2.k.first()) return true;
-		else if (k.first() - 0.000001 > s2.k.first()) return false;
-		return k.second() < s2.k.second();
+	public int getZ() {
+		return z;
 	}
 
-	//CompareTo Method. This is necessary when this class is used in a priority queue
+	public void setZ(int z) {
+		this.z = z;
+	}
+
+	public Pair<Double, Double> getKey() {
+		return key;
+	}
+
+	public void setKey(Pair<Double, Double> key) {
+		this.key = key;
+	}
+
+	// Equals
+	public boolean eq(final State s2) {
+		return ((this.x == s2.x) && (this.y == s2.y) && (this.z == s2.z));
+	}
+
+	// Not Equals
+	public boolean neq(final State s2) {
+		return ((this.x != s2.x) || (this.y != s2.y) || (this.z != s2.z));
+	}
+
+	// Less than
+	public boolean lt(final State s2) {
+		if (key.first() + 0.000001 < s2.key.first())
+			return true;
+		else if (key.first() - 0.000001 > s2.key.first())
+			return false;
+		return key.second() < s2.key.second();
+	}
+
+	/**
+	 * Required for PriorityQueue
+	 * 
+	 * @param other
+	 * @return
+	 */
 	@Override
-	public int compareTo(Object that)
-	{
-		//This is a modified version of the gt method
-		State other = (State)that;
-		if (k.first()-0.00001 > other.k.first()) return 1;
-		else if (k.first() < other.k.first()-0.00001) return -1;
-		if (k.second() > other.k.second()) return 1;
-		else if (k.second() < other.k.second()) return -1;
+	public int compareTo(State other) {
+		if (key.first() - 0.00001 > other.key.first())
+			return 1;
+		else if (key.first() < other.key.first() - 0.00001)
+			return -1;
+		if (key.second() > other.key.second())
+			return 1;
+		else if (key.second() < other.key.second())
+			return -1;
 		return 0;
 	}
 
-	//Override the CompareTo function for the HashMap usage
 	@Override
-	public int hashCode()
-	{
-		return this.x + 34245*this.y;
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		result = prime * result + x;
+		result = prime * result + y;
+		result = prime * result + z;
+		return result;
 	}
 
-	@Override public boolean equals(Object aThat) {
-		//check for self-comparison
-		if ( this == aThat ) return true;
-
-		//use instanceof instead of getClass here for two reasons
-		//1. if need be, it can match any supertype, and not just one class;
-		//2. it renders an explict check for "that == null" redundant, since
-		//it does the check for null already - "null instanceof [type]" always
-		//returns false. (See Effective Java by Joshua Bloch.)
-		if ( !(aThat instanceof State) ) return false;
-		//Alternative to the above line :
-		//if ( aThat == null || aThat.getClass() != this.getClass() ) return false;
-
-		//cast to native object is now safe
-		State that = (State)aThat;
-
-		//now a proper field-by-field evaluation can be made
-		if (this.x == that.x && this.y == that.y) return true;
-		return false;
-
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		State other = (State) obj;
+		if (key == null) {
+			if (other.key != null)
+				return false;
+		} else if (!key.equals(other.key))
+			return false;
+		if (x != other.x)
+			return false;
+		if (y != other.y)
+			return false;
+		if (z != other.z)
+			return false;
+		return true;
 	}
 
 }

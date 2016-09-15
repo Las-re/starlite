@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-/**
- *
+/*
  * @author daniel beard
  * http://danielbeard.wordpress.com
  * http://github.com/paintstripper
@@ -26,200 +25,174 @@ import java.util.PriorityQueue;
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- *From the paper, g(s)g(s) is only an estimate of the distance travelled (vs a direct measurement, which is how A* computes it).
-
-The rhs-values are one-step lookahead values based on the g-values and thus potentially better informed than the g-values.
-The calculation of rhsrhs seems to be purely a sanity check that the estimate of g(s)g(s) is accurate, based on the estimate of a predecessor.
-
-in which case will the rhs-value and g-value of a node be differentt
- *
+ * 
+ * @author Lynn Owens
+ * https://github.com/LynnOwens
  */
-public class DStarLite implements java.io.Serializable{
+public class DStarLite {
 
-    //Private Member variables
-    private List<State> path = new ArrayList<State>();
-    private double C1;
+	public static final double DEFAULT_CELL_COST = 1.0;
+	public static final double M_SQRT2 = Math.sqrt(2.0);
+	
+	private List<State> path = new ArrayList<State>();
     private double k_m;
-    private State s_start = new State();
-    private State s_goal  = new State();
-    private State s_last  = new State();
-    private int maxSteps;
-    private PriorityQueue<State>        openList = new PriorityQueue<State>(); // The open list’s purpose is to hold potential best path nodes that have not yet been considered, starting with the start node
-    // The elements of the priority queue are ordered according to their natural ordering, or by a Comparator provided at queue construction time
-    
-    public HashMap<State, CellInfo>    cellHash = new HashMap<State, CellInfo>();
-    private HashMap<State, Float>        openHash = new HashMap<State, Float>();
+    private State startState = new State();
+    private State goalState  = new State();
+    private State lastState  = new State();
+    private int maxSteps = 80000;
+    private PriorityQueue<State> openCandidateQueue = new PriorityQueue<State>(); //  
+    private HashMap<State, CellInfo> cellHash = new HashMap<State, CellInfo>();
+    private HashMap<State, Float> openHash = new HashMap<State, Float>();
 
-    //Constants
-    private double M_SQRT2 = Math.sqrt(2.0);
-
-    //Default constructor
-    public DStarLite()
-    {
-        maxSteps    = 80000;
-        C1            = 1;
-    }
-
-    //Calculate Keys
-    public void CalculateKeys()
-    {
-            
-    }
-
-    /*
-     * Initialise Method
-     * @params start and goal coordinates
+    /**
+     * Initialize the pathfinder
+     * 
+     * @param sX starting x coord
+     * @param sY starting y coord
+     * @param gX goal x coord
+     * @param gY goal y coord
      */
     public void init(int sX, int sY, int gX, int gY)
     {
         cellHash.clear();
         path.clear();
         openHash.clear();
-        while(!openList.isEmpty()) openList.poll();
+        
+		while (!openCandidateQueue.isEmpty()) {
+			openCandidateQueue.poll();
+		}
 
         k_m = 0;
 
-        s_start.x = sX; // State start x param
-        s_start.y = sY; // state start y param
-        s_goal.x  = gX; // State goal x param
-        s_goal.y  = gY; // State goal y param
+        startState.setX(sX);
+        startState.setY(sY); 
+        goalState.setX(gX); 
+        goalState.setY(gY);
 
-        CellInfo tmp = new CellInfo();
-        tmp.g   = 0; // g = cost thus far from the start to current node
-        tmp.rhs = 0; // Right Hand Side, heuristic.  g + estimated cost to move to a node
-        tmp.cost = C1; // Cost of the node
+        CellInfo goalCell = new CellInfo();
+        cellHash.put(goalState, goalCell); 
 
-        cellHash.put(s_goal, tmp); // put the goal node in the hash
-
-        tmp = new CellInfo();  // now for the start
-        tmp.g = tmp.rhs = heuristic(s_start,s_goal); // rhs from start to goal
-        tmp.cost = C1;
-        cellHash.put(s_start, tmp); // put the start in the hash
+        CellInfo startCell = new CellInfo();  
+        double totalPathCost = heuristic(startState,goalState);
+        startCell.setRhs(totalPathCost); 
+        startCell.setG(totalPathCost); 
+        cellHash.put(startState, startCell);
         
-        // TODO: Uncertain
-        s_start = calculateKey(s_start);  // Key for a node is a tuple of cost thus far and cost to move ??
+        // TODO: Uncertain what this does
+        startState = calculateKey(startState);  
 
-        s_last = s_start;
-
+        lastState = startState;
     }
 
     /*
-     * CalculateKey(state u)
+     * CalculateKey
      * As per [S. Koenig, 2002]
      * 
      * Key of a node is a value that is going to be used to sort the open list by
-     * key is a touple value = [min(g(x), rhs(x)+h(x)); min(g(x), rhs(s)]
+     * 
+     * Key is a tuple value = [min(g(x), rhs(x)+h(x)); min(g(x), rhs(s)]
      * These keys are compared lexiographically so ...
      * 
      * u < v if
      * u.first < v.first OR ( u.first == v.first AND u.second < v.second ) 
      */
-    private State calculateKey(State u)
+    private State calculateKey(State state)
     {
-        double val = Math.min(getRHS(u), getG(u));
+        double val = Math.min(getRHS(state), getG(state));
 
-        u.k.setFirst (val + heuristic(u,s_start) + k_m);  // The lesser of the RHS and G (cost thus far) PLUS the heuristic PLUS k_m
-        u.k.setSecond(val);   // The lesser of the RHS and G (cost thus far)
-        
-        /*
-         * Because the we’re subtracting the same value from all keys the order in the Priority Queue does not change.
-            So Instead why don’t we add that value to all new calculated keys
-            This way we avoid traversing the Queue every time connections change and heuristics remain admissible
-         */
-
-        return u;
+        Pair<Double, Double> key = state.getKey();
+        key.setFirst (val + heuristic(state, startState) + k_m);  
+        key.setSecond(val);  
+ 
+        return state;
     }
 
 	/*
-	 * Returns the rhs value for state u. 
-	 * RIGHT HAND SIDE Cost to the parent of a node plus the cost to travel to that node
+	 * Returns the rhs value for the provided state
 	 */
-	private double getRHS(State u) {
-		if (u == s_goal)
-			return 0; // if the state is goal, then 0
-
-		// if the cellHash doesn't contain the State u
-		if (cellHash.get(u) == null) {
-			return heuristic(u, s_goal); // then calculate rhs
+	private double getRHS(State state) {
+		if (state == goalState) {
+			return 0; 
 		}
 
-		// otherwise return it from the hash
-		// get(u) returns a cellinfo
-		return cellHash.get(u).rhs;
+		if (cellHash.get(state) == null) {
+			return heuristic(state, goalState); 
+		}
+
+		return cellHash.get(state).getRhs();
 	}
 
     /*
-     * Returns the g value for the state u.
-     * COST SO FAR
+     * Returns the g value for the provided state
      */
 	private double getG(State u) {
-		// if the cellHash doesn't contain the State u
 		if (cellHash.get(u) == null) {
-			return heuristic(u, s_goal); // then calculate g
+			return heuristic(u, goalState);
 		}
 
-		// otherwise return it from the hash
-		// get(u) returns a cellinfo
-		return cellHash.get(u).g;
+		return cellHash.get(u).getG();
 	}
 
     /*
      * Pretty self explanatory, the heuristic we use is the 8-way distance
-     * scaled by a constant C1 (should be set to <= min cost)
+     * scaled by a constant DEFAULT_CELL_COST (should be set to <= min cost)
      */
     private double heuristic(State a, State b)
     {
-        return eightCondist(a,b)*C1;
+        return eightCondist(a,b) * DEFAULT_CELL_COST;
     }
 
     /*
      * Returns the 8-way distance between state a and state b
      */
-    private double eightCondist(State a, State b)
-    {
-        double temp;
-        double min = Math.abs(a.x - b.x);
-        double max = Math.abs(a.y - b.y);
-        if (min > max)
-        {
-            temp = min;
-            min = max;
-            max = temp;
-        }
-        return ((M_SQRT2-1.0)*min + max);
+	private double eightCondist(State aState, State bState) {
+		double temp;
+		double min = Math.abs(aState.getX() - bState.getX());
+		double max = Math.abs(aState.getY() - bState.getY());
 
-    }
+		if (min > max) {
+			temp = min;
+			min = max;
+			max = temp;
+		}
 
-    public boolean replan()
+		return ((M_SQRT2 - 1.0) * min + max);
+	}
+
+    /**
+     * Find a path to the goal
+     * 
+     * Returns true if a path is found, false otherwise
+     * 
+     * @return
+     */
+    public boolean pathfind()
     {
         path.clear();
 
-        int res = computeShortestPath();
-        if (res < 0)
+        boolean canPath = computeShortestPath();
+		if (!canPath) {
+			return false;
+		}
+
+        LinkedList<State> successorStates = new LinkedList<State>();
+        State currentState = startState;
+
+        if (getG(startState) == Double.POSITIVE_INFINITY)
         {
-            System.out.println("No Path to Goal");
+            // We can't even get home
             return false;
         }
 
-        LinkedList<State> n = new LinkedList<State>();
-        State cur = s_start;
-
-        if (getG(s_start) == Double.POSITIVE_INFINITY)
+        while (currentState.neq(goalState))
         {
-            System.out.println("No Path to Goal");
-            return false;
-        }
+            path.add(currentState);
+            successorStates = new LinkedList<State>();
+            successorStates = getSuccessors(currentState);
 
-        while (cur.neq(s_goal))
-        {
-            path.add(cur);
-            n = new LinkedList<State>();
-            n = getSucc(cur);
-
-            if (n.isEmpty())
+            if (successorStates.isEmpty())
             {
-                System.out.println("No Path to Goal");
+                // Hit a dead end
                 return false;
             }
 
@@ -227,116 +200,118 @@ public class DStarLite implements java.io.Serializable{
             double tmin = 0;   
             State smin = new State();
 
-            for (State i : n)
+            for (State successorState : successorStates)
             {
-                double val  = cost(cur, i);
-                double val2 = trueDist(i,s_goal) + trueDist(s_start, i);
-                val += getG(i);
+                double val  = calcCostToMove(currentState, successorState);
+                double val2 = trueDist(successorState,goalState) + trueDist(startState, successorState);
+                val += getG(successorState);
 
                 if (close(val,cmin)) {
                     if (tmin > val2) {
                         tmin = val2;
                         cmin = val;
-                        smin = i;
+                        smin = successorState;
                     }
                 } else if (val < cmin) {
                     tmin = val2;
                     cmin = val;
-                    smin = i;
+                    smin = successorState;
                 }
             }
-            n.clear();
-            cur = new State(smin);
+            successorStates.clear();
+            currentState = new State(smin);
             //cur = smin;
         }
-        path.add(s_goal);
+        path.add(goalState);
+        
         return true;
     }
 
     /*
      * As per [S. Koenig,2002] except for two main modifications:
-     * 1. We stop planning after a number of steps, 'maxsteps' we do this
+     * 
+     * 1.  We stop planning after a number of steps, 'maxsteps' we do this
      *    because this algorithm can plan forever if the start is surrounded  by obstacles
-     * 2. We lazily remove states from the open list so we never have to iterate through it.
+     * 2.  We lazily remove states from the open list so we never have to iterate through it.
+     * 
+     * Returns false if there is no path to goal
      */
-    private int computeShortestPath()
+    private boolean computeShortestPath()
     {
-        LinkedList<State> s = new LinkedList<State>();
+        LinkedList<State> states = new LinkedList<State>();
 
-        if (openList.isEmpty()) return 1;  // if no candidate nodes then return 1
+        if (openCandidateQueue.isEmpty()) {
+        	// We have no candidates to pursue
+        	return false; 
+        }
 
-        /*
-         * peek = Retrieves, but does not remove, the head of this queue
-         * While the open (candidate) list is not empty AND the head state is less than the calculated key of start 
-         * || OR || the RHS of start != g(start)
-         */
-        int k=0;
-        while     (
-                    (
-                        !openList.isEmpty()
-                    ) 
-                    && 
-                    (
-                    	// TODO: Uncertain
-                    	// While it's easier to move to the candidate than the start???
-                        openList.peek().lt(s_start = calculateKey(s_start)) // Assignment in comparison.  
-                    ) 
-                    || 
-                    (
-                    	// sanity check failed?  
-                    	// TODO: Uncertain
-                        getRHS(s_start) != getG(s_start)
-                    )
-                ) 
-        {
+        int numSteps=0;
+        startState = calculateKey(startState);
+        
+		while ((!openCandidateQueue.isEmpty()) && (openCandidateQueue.peek().lt(startState)) || (getRHS(startState) != getG(startState))) {
             // increment step iterator and compare... if it is greater than max then abort
-            if (k++ > maxSteps)
-            {
-                System.out.println("At maxsteps");
-                return -1;
-            }
+			if (numSteps++ > maxSteps) {
+				throw new RuntimeException("Maximum number of iterations hit: " + maxSteps);
+			}
 
-            State u;
+            State currentState = null;
 
-            // true if the RHS(start) is NOT the G(start)
-            boolean test = (getRHS(s_start) != getG(s_start)); // Determining if we got into this loop by sanity check failing
+            // path is sane if the RHS(start) is NOT the G(start)
+            boolean pathIsSane = (getRHS(startState) != getG(startState)); // Determining if we got into this loop by sanity check failing
 
-            //lazy remove
+            // lazy remove
             while(true) {
-                if (openList.isEmpty()) return 1; // again, if empty, 1
-                u = openList.poll();  // retrieve and remove head
-
-                if (!isValid(u)) continue; // if this state is not valid skip 
-                if (!(u.lt(s_start)) && (!test)) return 2; // if u >= start AND test = false then return 2
+                if (openCandidateQueue.isEmpty()) {
+                	// We have no candidates remaining to pursue
+                	return false;
+                }
+                              
+                // Retrieve and remove the best candidate from the queue
+                currentState = openCandidateQueue.poll();
                 
-                // done here
+                if (!(currentState.lt(startState)) && (!pathIsSane)) {
+                	// We've gone backwards or something and the path is corrupt
+                	// FAIL
+                	return false; 
+                }
+
+                if (!isValid(currentState)) {
+                	continue;  
+                }
+               
                 break;
             }
 
-            // left off here, need to understand state
-            openHash.remove(u);
+            openHash.remove(currentState);
 
-            State k_old = new State(u);
+            State previousState = new State(currentState);
+            currentState = calculateKey(currentState);
 
-            if (k_old.lt(calculateKey(u))) { //u is out of date
-                insert(u);
-            } else if (getG(u) > getRHS(u)) { //needs update (got better)
-                setG(u,getRHS(u));
-                s = getPred(u);
-                for (State i : s) {
-                    updateVertex(i);
+            if (previousState.lt(currentState)) { 
+            	// We need to consider heading back to where we came from
+                addOpenCandidate(currentState);
+            } else if (getG(currentState) > getRHS(currentState)) { 
+            	// We've gotten closer than we expected
+                setG(currentState, getRHS(currentState));
+                states = getPredecessors(currentState);
+                
+                for (State state : states) {
+                    updateVertex(state);
                 }
-            } else {                         // g <= rhs, state has got worse
-                setG(u, Double.POSITIVE_INFINITY);
-                s = getPred(u);
+            } else {                         
+            	// g <= rhs, state has got worse
+                setG(currentState, Double.POSITIVE_INFINITY);
+                states = getPredecessors(currentState);
 
-                for (State i : s) {
-                    updateVertex(i);
+                for (State state : states) {
+                    updateVertex(state);
                 }
-                updateVertex(u);
+                
+                updateVertex(currentState);
             }
-        } //while
-        return 0;
+        } 
+		
+        return true;
     }
 
     /*
@@ -346,33 +321,37 @@ public class DStarLite implements java.io.Serializable{
      * 
      * TODO: 14 way in 3d?  
      */
-    private LinkedList<State> getSucc(State u)
+    private LinkedList<State> getSuccessors(State state)
     {
-        LinkedList<State> s = new LinkedList<State>();
+        LinkedList<State> successors = new LinkedList<State>();
         State tempState;
 
-        if (occupied(u)) return s;
+        if (occupied(state)) {
+        	// We cannot move into this cell
+        	// Therefore it has no successor states
+        	return successors;
+        }
 
         //Generate the successors, starting at the immediate right,
         //Moving in a clockwise manner
-        tempState = new State(u.x + 1, u.y, new Pair(-1.0,-1.0));
-        s.addFirst(tempState);
-        tempState = new State(u.x + 1, u.y + 1, new Pair(-1.0,-1.0));
-        s.addFirst(tempState);
-        tempState = new State(u.x, u.y + 1, new Pair(-1.0,-1.0));
-        s.addFirst(tempState);
-        tempState = new State(u.x - 1, u.y + 1, new Pair(-1.0,-1.0));
-        s.addFirst(tempState);
-        tempState = new State(u.x - 1, u.y, new Pair(-1.0,-1.0));
-        s.addFirst(tempState);
-        tempState = new State(u.x - 1, u.y - 1, new Pair(-1.0,-1.0));
-        s.addFirst(tempState);
-        tempState = new State(u.x, u.y - 1, new Pair(-1.0,-1.0));
-        s.addFirst(tempState);
-        tempState = new State(u.x + 1, u.y - 1, new Pair(-1.0,-1.0));
-        s.addFirst(tempState);
+        tempState = new State(state.getX() + 1, state.getY(), new Pair(-1.0,-1.0));
+        successors.addFirst(tempState);
+        tempState = new State(state.getX() + 1, state.getY() + 1, new Pair(-1.0,-1.0));
+        successors.addFirst(tempState);
+        tempState = new State(state.getX(), state.getY() + 1, new Pair(-1.0,-1.0));
+        successors.addFirst(tempState);
+        tempState = new State(state.getX() - 1, state.getY() + 1, new Pair(-1.0,-1.0));
+        successors.addFirst(tempState);
+        tempState = new State(state.getX() - 1, state.getY(), new Pair(-1.0,-1.0));
+        successors.addFirst(tempState);
+        tempState = new State(state.getX() - 1, state.getY() - 1, new Pair(-1.0,-1.0));
+        successors.addFirst(tempState);
+        tempState = new State(state.getX(), state.getY() - 1, new Pair(-1.0,-1.0));
+        successors.addFirst(tempState);
+        tempState = new State(state.getX() + 1, state.getY() - 1, new Pair(-1.0,-1.0));
+        successors.addFirst(tempState);
 
-        return s;
+        return successors;
     }
 
     /*
@@ -380,29 +359,29 @@ public class DStarLite implements java.io.Serializable{
      * this is for an 8-way connected graph, the list contains all the
      * neighbours for state u. Occupied neighbours are not added to the list
      */
-    private LinkedList<State> getPred(State u)
+    private LinkedList<State> getPredecessors(State u)
     {
-        LinkedList<State> s = new LinkedList<State>();
+        LinkedList<State> predecessors = new LinkedList<State>();
         State tempState;
 
-        tempState = new State(u.x + 1, u.y, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) s.addFirst(tempState);
-        tempState = new State(u.x + 1, u.y + 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) s.addFirst(tempState);
-        tempState = new State(u.x, u.y + 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) s.addFirst(tempState);
-        tempState = new State(u.x - 1, u.y + 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) s.addFirst(tempState);
-        tempState = new State(u.x - 1, u.y, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) s.addFirst(tempState);
-        tempState = new State(u.x - 1, u.y - 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) s.addFirst(tempState);
-        tempState = new State(u.x, u.y - 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) s.addFirst(tempState);
-        tempState = new State(u.x + 1, u.y - 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) s.addFirst(tempState);
+        tempState = new State(u.getX() + 1, u.getY(), new Pair(-1.0,-1.0));
+        if (!occupied(tempState)) predecessors.addFirst(tempState);
+        tempState = new State(u.getX() + 1, u.getY() + 1, new Pair(-1.0,-1.0));
+        if (!occupied(tempState)) predecessors.addFirst(tempState);
+        tempState = new State(u.getX(), u.getY() + 1, new Pair(-1.0,-1.0));
+        if (!occupied(tempState)) predecessors.addFirst(tempState);
+        tempState = new State(u.getX() - 1, u.getY() + 1, new Pair(-1.0,-1.0));
+        if (!occupied(tempState)) predecessors.addFirst(tempState);
+        tempState = new State(u.getX() - 1, u.getY(), new Pair(-1.0,-1.0));
+        if (!occupied(tempState)) predecessors.addFirst(tempState);
+        tempState = new State(u.getX() - 1, u.getY() - 1, new Pair(-1.0,-1.0));
+        if (!occupied(tempState)) predecessors.addFirst(tempState);
+        tempState = new State(u.getX(), u.getY() - 1, new Pair(-1.0,-1.0));
+        if (!occupied(tempState)) predecessors.addFirst(tempState);
+        tempState = new State(u.getX() + 1, u.getY() - 1, new Pair(-1.0,-1.0));
+        if (!occupied(tempState)) predecessors.addFirst(tempState);
 
-        return s;
+        return predecessors;
     }
 
 
@@ -412,13 +391,13 @@ public class DStarLite implements java.io.Serializable{
      */
     public void updateStart(int x, int y)
     {
-        s_start.x = x;
-        s_start.y = y;
+        startState.setX(x);
+        startState.setY(y);
 
-        k_m += heuristic(s_last,s_start);
+        k_m += heuristic(lastState,startState);
 
-        s_start = calculateKey(s_start);
-        s_last = s_start;
+        startState = calculateKey(startState);
+        lastState = startState;
 
     }
 
@@ -432,14 +411,14 @@ public class DStarLite implements java.io.Serializable{
      */
     public void updateGoal(int x, int y)
     {
-        List<Pair<ipoint2, Double> > toAdd = new ArrayList<Pair<ipoint2, Double> >();
-        Pair<ipoint2, Double> tempPoint;
+        List<Pair<IPoint2, Double> > toAdd = new ArrayList<Pair<IPoint2, Double> >();
+        Pair<IPoint2, Double> tempPoint;
 
         for (Map.Entry<State,CellInfo> entry : cellHash.entrySet()) {
-            if (!close(entry.getValue().cost, C1)) {
+            if (!close(entry.getValue().getCost(), DEFAULT_CELL_COST)) {
                 tempPoint = new Pair(
-                            new ipoint2(entry.getKey().x,entry.getKey().y),
-                            entry.getValue().cost);
+                            new IPoint2(entry.getKey().getX(), entry.getKey().getY()),
+                            entry.getValue().getCost());
                 toAdd.add(tempPoint);
             }
         }
@@ -447,32 +426,35 @@ public class DStarLite implements java.io.Serializable{
         cellHash.clear();
         openHash.clear();
 
-        while(!openList.isEmpty())
-            openList.poll();
+        while(!openCandidateQueue.isEmpty())
+            openCandidateQueue.poll();
 
         k_m = 0;
 
-        s_goal.x = x;
-        s_goal.y = y;
+        goalState.setX(x);
+        goalState.setY(y);
 
         CellInfo tmp = new CellInfo();
-        tmp.g = tmp.rhs = 0;
-        tmp.cost = C1;
+        tmp.setRhs(0);
+        tmp.setG(0);
+        tmp.setCost(DEFAULT_CELL_COST);
 
-        cellHash.put(s_goal, tmp);
+        cellHash.put(goalState, tmp);
 
         tmp = new CellInfo();
-        tmp.g = tmp.rhs = heuristic(s_start, s_goal);
-        tmp.cost = C1;
-        cellHash.put(s_start, tmp);
-        s_start = calculateKey(s_start);
+        double totalPathCost = heuristic(startState, goalState);
+        tmp.setRhs(totalPathCost);
+        tmp.setG(totalPathCost);
+        tmp.setCost(DEFAULT_CELL_COST);
+        cellHash.put(startState, tmp);
+        startState = calculateKey(startState);
 
-        s_last = s_start;
+        lastState = startState;
 
-        Iterator<Pair<ipoint2,Double> > iterator = toAdd.iterator();
+        Iterator<Pair<IPoint2,Double> > iterator = toAdd.iterator();
         while(iterator.hasNext()) {
             tempPoint = iterator.next();
-            updateCell(tempPoint.first().x, tempPoint.first().y, tempPoint.second());
+            updateCell(tempPoint.first().getX(), tempPoint.first().getY(), tempPoint.second());
         }
 
 
@@ -485,19 +467,19 @@ public class DStarLite implements java.io.Serializable{
     {
         LinkedList<State> s = new LinkedList<State>();
 
-        if (u.neq(s_goal)) {
-            s = getSucc(u);
+        if (u.neq(goalState)) {
+            s = getSuccessors(u);
             double tmp = Double.POSITIVE_INFINITY;
             double tmp2;
 
             for (State i : s) {
-                tmp2 = getG(i) + cost(u,i);
+                tmp2 = getG(i) + calcCostToMove(u,i);
                 if (tmp2 < tmp) tmp = tmp2;
             }
             if (!close(getRHS(u),tmp)) setRHS(u,tmp);
         }
 
-        if (!close(getG(u),getRHS(u))) insert(u);
+        if (!close(getG(u),getRHS(u))) addOpenCandidate(u);
     }
 
     /*
@@ -517,7 +499,7 @@ public class DStarLite implements java.io.Serializable{
     private void setG(State u, double g)
     {
         makeNewCell(u);
-        cellHash.get(u).g = g;
+        cellHash.get(u).setG(g);
     }
 
     /*
@@ -526,7 +508,7 @@ public class DStarLite implements java.io.Serializable{
     private void setRHS(State u, double rhs)
     {
         makeNewCell(u);
-        cellHash.get(u).rhs = rhs;
+        cellHash.get(u).setRhs(rhs);
     }
 
     /*
@@ -536,8 +518,9 @@ public class DStarLite implements java.io.Serializable{
     {
         if (cellHash.get(u) != null) return;
         CellInfo tmp = new CellInfo();
-        tmp.g = tmp.rhs = heuristic(u,s_goal);
-        tmp.cost = C1;
+        double costToGoal = heuristic(u,goalState);
+        tmp.setRhs(costToGoal);
+        tmp.setG(costToGoal);
         cellHash.put(u, tmp);
     }
 
@@ -547,20 +530,20 @@ public class DStarLite implements java.io.Serializable{
     public void updateCell(int x, int y, double val)
     {
         State u = new State();
-        u.x = x;
-        u.y = y;
+        u.setX(x);
+        u.setY(y);
 
-        if ((u.eq(s_start)) || (u.eq(s_goal))) return;
+        if ((u.eq(startState)) || (u.eq(goalState))) return;
 
         makeNewCell(u);
-        cellHash.get(u).cost = val;
+        cellHash.get(u).setCost(val);
         updateVertex(u);
     }
 
     /*
      * Inserts state u into openList and openHash
      */
-    private void insert(State u)
+    private void addOpenCandidate(State u)
     {
         //iterator cur
         float csum;
@@ -576,7 +559,7 @@ public class DStarLite implements java.io.Serializable{
         //if ((cur != openHash.end()) && (close(csum,cur->second))) return;
 
         openHash.put(u, csum);
-        openList.add(u);
+        openCandidateQueue.add(u);
     }
 
     /*
@@ -585,28 +568,29 @@ public class DStarLite implements java.io.Serializable{
      */
     private float keyHashCode(State u)
     {
-        return (float)(u.k.first() + 1193*u.k.second());
+        return (float)(u.getKey().first() + 1193*u.getKey().second());
     }
 
     /*
-     * Returns true if the cell is occupied (non-traversable), false
-     * otherwise. Non-traversable are marked with a cost < 0
+     * Returns true if the cell is occupied (non-traversable), false otherwise. 
+     * Non-traversable are marked with a cost < 0
      */
-    private boolean occupied(State u)
-    {
-        //if the cellHash does not contain the State u
-        if (cellHash.get(u) == null)
-            return false;
-        return (cellHash.get(u).cost < 0);
-    }
+	private boolean occupied(State state) {
+		// if the cellHash does not contain the State u
+		if (cellHash.get(state) == null) {
+			return false;
+		}
+
+		return (cellHash.get(state).getCost() < 0);
+	}
 
     /*
      * Euclidean cost between state a and state b
      */
     private double trueDist(State a, State b)
     {
-        float x = a.x-b.x;
-        float y = a.y-b.y;
+        float x = a.getX()-b.getX();
+        float y = a.getY()-b.getY();
         return Math.sqrt(x*x + y*y);
     }
 
@@ -615,16 +599,21 @@ public class DStarLite implements java.io.Serializable{
      * either the cost of moving off state a or onto state b, we went with the
      * former. This is also the 8-way cost.
      */
-    private double cost(State a, State b)
+    private double calcCostToMove(State a, State b)
     {
-        int xd = Math.abs(a.x-b.x);
-        int yd = Math.abs(a.y-b.y);
+        int xd = Math.abs(a.getX() - b.getX());
+        int yd = Math.abs(a.getY() - b.getY());
         double scale = 1;
 
-        if (xd+yd > 1) scale = M_SQRT2;
+        if (xd + yd > 1) {
+        	scale = M_SQRT2;
+        }
 
-        if (cellHash.containsKey(a)==false) return scale*C1; 
-        return scale*cellHash.get(a).cost;
+        if (cellHash.containsKey(a) == false) {
+        	return scale * DEFAULT_CELL_COST; 
+        }
+        
+        return scale * cellHash.get(a).getCost();
     }
 
     /*
@@ -641,58 +630,5 @@ public class DStarLite implements java.io.Serializable{
         return path;
     }
 
-
-    public static void main(String[] args)
-    {
-        DStarLite pf = new DStarLite();
-        pf.init(0,1,3,1);
-        pf.updateCell(2, 1, -1);
-        pf.updateCell(2, 0, -1);
-        pf.updateCell(2, 2, -1);
-        pf.updateCell(3, 0, -1);
-
-        System.out.println("Start node: (0,1)");
-        System.out.println("End node: (3,1)");
-
-        //Time the replanning
-        long begin = System.currentTimeMillis();
-        pf.replan();
-        pf.updateGoal(3, 2);
-        long end = System.currentTimeMillis();
-
-        System.out.println("Time: " + (end-begin) + "ms");
-
-        List<State> path = pf.getPath();
-        for (State i : path)
-        {
-            System.out.println("x: " + i.x + " y: " + i.y);
-        }
-
-    }
 }
 
-class CellInfo implements java.io.Serializable
-{
-    public double g=0;
-    public double rhs=0;
-    public double cost=0;
-}
-
-class ipoint2
-{
-    public int x=0;
-    public int y=0;
-
-    //default constructor
-    public ipoint2()
-    {
-
-    }
-
-    //overloaded constructor
-    public ipoint2(int x, int y)
-    {
-        this.x = x;
-        this.y = y;
-    }
-}

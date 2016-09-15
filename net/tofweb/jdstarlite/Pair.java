@@ -1,22 +1,7 @@
 package net.tofweb.jdstarlite;
 
-/**
- * The class <code>Pair</code> models a container for two objects wherein the
- * object order is of no consequence for equality and hashing. An example of
- * using Pair would be as the return type for a method that needs to return two
- * related objects. Another good use is as entries in a Set or keys in a Map
- * when only the unordered combination of two objects is of interest.<p>
- * The term "object" as being a one of a Pair can be loosely interpreted. A
- * Pair may have one or two <code>null</code> entries as values. Both values
- * may also be the same object.<p>
- * Mind that the order of the type parameters T and U is of no importance. A
- * Pair&lt;T, U> can still return <code>true</code> for method <code>equals</code>
- * called with a Pair&lt;U, T> argument.<p>
- * Instances of this class are immutable, but the provided values might not be.
- * This means the consistency of equality checks and the hash code is only as
- * strong as that of the value types.<p>
- *
- * * @author daniel beard
+/*
+ * @author daniel beard
  * http://danielbeard.wordpress.com
  * http://github.com/paintstripper
  *
@@ -32,17 +17,37 @@ package net.tofweb.jdstarlite;
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * @author Lynn Owens
+ * https://github.com/LynnOwens
  */
-public class Pair<T, U> implements Cloneable, java.io.Serializable {
+/**
+ * The class <code>Pair</code> models a container for two objects wherein the
+ * object order is of no consequence for equality and hashing. An example of
+ * using Pair would be as the return type for a method that needs to return two
+ * related objects. Another good use is as entries in a Set or keys in a Map
+ * when only the unordered combination of two objects is of interest.<p>
+ * The term "object" as being a one of a Pair can be loosely interpreted. A
+ * Pair may have one or two <code>null</code> entries as values. Both values
+ * may also be the same object.<p>
+ * Mind that the order of the type parameters T and U is of no importance. A
+ * Pair&lt;T, U> can still return <code>true</code> for method <code>equals</code>
+ * called with a Pair&lt;U, T> argument.<p>
+ * Instances of this class are immutable, but the provided values might not be.
+ * This means the consistency of equality checks and the hash code is only as
+ * strong as that of the value types.<p>
+ */
+public class Pair<T, U> implements Cloneable {
 
     /**
      * One of the two values, for the declared type T.
      */
     private T object1;
+    
     /**
      * One of the two values, for the declared type U.
      */
     private U object2;
+    
     private boolean object1Null;
     private boolean object2Null;
     private boolean dualNull;
@@ -71,9 +76,7 @@ public class Pair<T, U> implements Cloneable, java.io.Serializable {
      * @return a value of this Pair.
      */
     public T first() {
-
         return object1;
-
     }
 
     /**
@@ -82,9 +85,7 @@ public class Pair<T, U> implements Cloneable, java.io.Serializable {
      * @return a value of this Pair.
      */
     public U second() {
-
         return object2;
-
     }
 
     /*
@@ -107,7 +108,6 @@ public class Pair<T, U> implements Cloneable, java.io.Serializable {
 		dualNull = object1Null && object2Null;
 	}
 
-
     /**
      * Returns a shallow copy of this Pair. The returned Pair is a new instance
      * created with the same values as this Pair. The values themselves are not
@@ -117,9 +117,7 @@ public class Pair<T, U> implements Cloneable, java.io.Serializable {
      */
     @Override
     public Pair<T, U> clone() {
-
         return new Pair<T, U>(object1, object2);
-
     }
 
     /**
@@ -222,11 +220,9 @@ public class Pair<T, U> implements Cloneable, java.io.Serializable {
      */
     @Override
     public int hashCode() {
-
         int hashCode = object1Null ? 0 : object1.hashCode();
         hashCode += (object2Null ? 0 : object2.hashCode());
         return hashCode;
-
     }
 
 }
