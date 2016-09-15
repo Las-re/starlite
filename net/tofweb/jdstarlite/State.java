@@ -1,3 +1,4 @@
+package net.tofweb.jdstarlite;
 
 /*
  * @author daniel beard
@@ -84,6 +85,7 @@ public class State implements Comparable, java.io.Serializable
 	}
 
 	//CompareTo Method. This is necessary when this class is used in a priority queue
+	@Override
 	public int compareTo(Object that)
 	{
 		//This is a modified version of the gt method

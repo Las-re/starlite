@@ -1,3 +1,5 @@
+package net.tofweb.jdstarlite;
+
 /**
  * The class <code>Pair</code> models a container for two objects wherein the
  * object order is of no consequence for equality and hashing. An example of
