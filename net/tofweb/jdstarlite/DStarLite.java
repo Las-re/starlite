@@ -144,19 +144,24 @@ public class DStarLite {
 
     /*
      * Returns the 8-way distance between state a and state b
+     * TODO: 14 way in 3d?  
      */
 	private double eightCondist(State aState, State bState) {
 		double temp;
-		double min = Math.abs(aState.getX() - bState.getX());
-		double max = Math.abs(aState.getY() - bState.getY());
+		
+		// A: 5,7    
+		// B: 10, 14
+		double min = Math.abs(aState.getX() - bState.getX()); // -5  
+		double max = Math.abs(aState.getY() - bState.getY()); // -7
 
-		if (min > max) {
-			temp = min;
-			min = max;
-			max = temp;
+		if (min > max) { // it is
+			temp = min; // temp = -5
+			min = max;  // min = -7
+			max = temp; // max = -5
 		}
 
-		return ((M_SQRT2 - 1.0) * min + max);
+		// Parentheses, Exponents, Multiplication and Division, and Addition and Subtraction
+		return ((M_SQRT2 - 1.0) * min + max);  // (2-1) * -7 + -5  // 1 * -7 -5 // -7 -5 // -12 
 	}
 
     /**
@@ -196,32 +201,30 @@ public class DStarLite {
                 return false;
             }
 
-            double cmin = Double.POSITIVE_INFINITY;
-            double tmin = 0;   
-            State smin = new State();
+            double minimumCost = Double.POSITIVE_INFINITY; 
+            State minimumState = new State();
 
-            for (State successorState : successorStates)
-            {
-                double val  = calcCostToMove(currentState, successorState);
-                double val2 = trueDist(successorState,goalState) + trueDist(startState, successorState);
-                val += getG(successorState);
+			for (State successorState : successorStates) {
+				double cost = calcCostToMove(currentState, successorState);
+				double euclideanDistance = trueDist(successorState, goalState) + trueDist(startState, successorState);
+				cost += getG(successorState);
 
-                if (close(val,cmin)) {
-                    if (tmin > val2) {
-                        tmin = val2;
-                        cmin = val;
-                        smin = successorState;
-                    }
-                } else if (val < cmin) {
-                    tmin = val2;
-                    cmin = val;
-                    smin = successorState;
-                }
-            }
+				// If the cost to move is essentially zero ...
+				if (isClose(cost, minimumCost)) {
+					if (0 > euclideanDistance) {
+						minimumCost = cost;
+						minimumState = successorState;
+					}
+				} else if (cost < minimumCost) {
+					minimumCost = cost;
+					minimumState = successorState;
+				}
+			}
+            
             successorStates.clear();
-            currentState = new State(smin);
-            //cur = smin;
+            currentState = new State(minimumState);
         }
+        
         path.add(goalState);
         
         return true;
@@ -318,8 +321,6 @@ public class DStarLite {
      * Returns a list of successor states for state u, since this is an
      * 8-way graph this list contains all of a cells neighbours. Unless
      * the cell is occupied, in which case it has no successors.
-     * 
-     * TODO: 14 way in 3d?  
      */
     private LinkedList<State> getSuccessors(State state)
     {
@@ -332,23 +333,30 @@ public class DStarLite {
         	return successors;
         }
 
-        //Generate the successors, starting at the immediate right,
-        //Moving in a clockwise manner
-        tempState = new State(state.getX() + 1, state.getY(), new Pair(-1.0,-1.0));
+		// Generate the successors, starting at the immediate right and moving
+		// in a clockwise manner
+		tempState = new State(state.getX() + 1, state.getY(), new Pair<Double, Double>(-1.0, -1.0));
+		successors.addFirst(tempState);
+        
+        tempState = new State(state.getX() + 1, state.getY() + 1, new Pair<Double, Double>(-1.0, -1.0));
         successors.addFirst(tempState);
-        tempState = new State(state.getX() + 1, state.getY() + 1, new Pair(-1.0,-1.0));
+        
+        tempState = new State(state.getX(), state.getY() + 1, new Pair<Double, Double>(-1.0, -1.0));
         successors.addFirst(tempState);
-        tempState = new State(state.getX(), state.getY() + 1, new Pair(-1.0,-1.0));
+        
+        tempState = new State(state.getX() - 1, state.getY() + 1, new Pair<Double, Double>(-1.0, -1.0));
         successors.addFirst(tempState);
-        tempState = new State(state.getX() - 1, state.getY() + 1, new Pair(-1.0,-1.0));
+        
+        tempState = new State(state.getX() - 1, state.getY(), new Pair<Double, Double>(-1.0, -1.0));
         successors.addFirst(tempState);
-        tempState = new State(state.getX() - 1, state.getY(), new Pair(-1.0,-1.0));
+        
+        tempState = new State(state.getX() - 1, state.getY() - 1, new Pair<Double, Double>(-1.0, -1.0));
         successors.addFirst(tempState);
-        tempState = new State(state.getX() - 1, state.getY() - 1, new Pair(-1.0,-1.0));
+        
+        tempState = new State(state.getX(), state.getY() - 1, new Pair<Double, Double>(-1.0, -1.0));
         successors.addFirst(tempState);
-        tempState = new State(state.getX(), state.getY() - 1, new Pair(-1.0,-1.0));
-        successors.addFirst(tempState);
-        tempState = new State(state.getX() + 1, state.getY() - 1, new Pair(-1.0,-1.0));
+        
+        tempState = new State(state.getX() + 1, state.getY() - 1, new Pair<Double, Double>(-1.0, -1.0));
         successors.addFirst(tempState);
 
         return successors;
@@ -359,30 +367,52 @@ public class DStarLite {
      * this is for an 8-way connected graph, the list contains all the
      * neighbours for state u. Occupied neighbours are not added to the list
      */
-    private LinkedList<State> getPredecessors(State u)
-    {
-        LinkedList<State> predecessors = new LinkedList<State>();
-        State tempState;
+	private LinkedList<State> getPredecessors(State u) {
+		LinkedList<State> predecessors = new LinkedList<State>();
+		State tempState;
 
-        tempState = new State(u.getX() + 1, u.getY(), new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) predecessors.addFirst(tempState);
-        tempState = new State(u.getX() + 1, u.getY() + 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) predecessors.addFirst(tempState);
-        tempState = new State(u.getX(), u.getY() + 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) predecessors.addFirst(tempState);
-        tempState = new State(u.getX() - 1, u.getY() + 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) predecessors.addFirst(tempState);
-        tempState = new State(u.getX() - 1, u.getY(), new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) predecessors.addFirst(tempState);
-        tempState = new State(u.getX() - 1, u.getY() - 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) predecessors.addFirst(tempState);
-        tempState = new State(u.getX(), u.getY() - 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) predecessors.addFirst(tempState);
-        tempState = new State(u.getX() + 1, u.getY() - 1, new Pair(-1.0,-1.0));
-        if (!occupied(tempState)) predecessors.addFirst(tempState);
+		tempState = new State(u.getX() + 1, u.getY(), new Pair<Double, Double>(-1.0, -1.0));
+		if (!occupied(tempState)) {
+			predecessors.addFirst(tempState);
+		}
 
-        return predecessors;
-    }
+		tempState = new State(u.getX() + 1, u.getY() + 1, new Pair<Double, Double>(-1.0, -1.0));
+		if (!occupied(tempState)) {
+			predecessors.addFirst(tempState);
+		}
+
+		tempState = new State(u.getX(), u.getY() + 1, new Pair<Double, Double>(-1.0, -1.0));
+		if (!occupied(tempState)) {
+			predecessors.addFirst(tempState);
+		}
+
+		tempState = new State(u.getX() - 1, u.getY() + 1, new Pair<Double, Double>(-1.0, -1.0));
+		if (!occupied(tempState)) {
+			predecessors.addFirst(tempState);
+		}
+
+		tempState = new State(u.getX() - 1, u.getY(), new Pair<Double, Double>(-1.0, -1.0));
+		if (!occupied(tempState)) {
+			predecessors.addFirst(tempState);
+		}
+
+		tempState = new State(u.getX() - 1, u.getY() - 1, new Pair<Double, Double>(-1.0, -1.0));
+		if (!occupied(tempState)) {
+			predecessors.addFirst(tempState);
+		}
+
+		tempState = new State(u.getX(), u.getY() - 1, new Pair<Double, Double>(-1.0, -1.0));
+		if (!occupied(tempState)) {
+			predecessors.addFirst(tempState);
+		}
+
+		tempState = new State(u.getX() + 1, u.getY() - 1, new Pair<Double, Double>(-1.0, -1.0));
+		if (!occupied(tempState)) {
+			predecessors.addFirst(tempState);
+		}
+
+		return predecessors;
+	}
 
 
     /*
@@ -398,7 +428,6 @@ public class DStarLite {
 
         startState = calculateKey(startState);
         lastState = startState;
-
     }
 
     /*
@@ -409,87 +438,95 @@ public class DStarLite {
      * too much. Also, it frees up a good deal of memory we are probably not
      * going to use.
      */
-    public void updateGoal(int x, int y)
-    {
-        List<Pair<IPoint2, Double> > toAdd = new ArrayList<Pair<IPoint2, Double> >();
-        Pair<IPoint2, Double> tempPoint;
+	public void updateGoal(int x, int y) {
+		List<Pair<IPoint2, Double>> toAdd = new ArrayList<Pair<IPoint2, Double>>();
+		Pair<IPoint2, Double> tempPoint;
 
-        for (Map.Entry<State,CellInfo> entry : cellHash.entrySet()) {
-            if (!close(entry.getValue().getCost(), DEFAULT_CELL_COST)) {
-                tempPoint = new Pair(
-                            new IPoint2(entry.getKey().getX(), entry.getKey().getY()),
-                            entry.getValue().getCost());
-                toAdd.add(tempPoint);
-            }
-        }
+		for (Map.Entry<State, CellInfo> entry : cellHash.entrySet()) {
+			if (!isClose(entry.getValue().getCost(), DEFAULT_CELL_COST)) {
+				tempPoint = new Pair<IPoint2, Double>(new IPoint2(entry.getKey().getX(), entry.getKey().getY()),
+						entry.getValue().getCost());
+				toAdd.add(tempPoint);
+			}
+		}
 
-        cellHash.clear();
-        openHash.clear();
+		cellHash.clear();
+		openHash.clear();
 
-        while(!openCandidateQueue.isEmpty())
-            openCandidateQueue.poll();
+		while (!openCandidateQueue.isEmpty())
+		{
+			openCandidateQueue.poll();
+		}
 
-        k_m = 0;
+		k_m = 0;
 
-        goalState.setX(x);
-        goalState.setY(y);
+		goalState.setX(x);
+		goalState.setY(y);
 
-        CellInfo tmp = new CellInfo();
-        tmp.setRhs(0);
-        tmp.setG(0);
-        tmp.setCost(DEFAULT_CELL_COST);
+		CellInfo tmp = new CellInfo();
+		tmp.setRhs(0);
+		tmp.setG(0);
+		tmp.setCost(DEFAULT_CELL_COST);
 
-        cellHash.put(goalState, tmp);
+		cellHash.put(goalState, tmp);
 
-        tmp = new CellInfo();
-        double totalPathCost = heuristic(startState, goalState);
-        tmp.setRhs(totalPathCost);
-        tmp.setG(totalPathCost);
-        tmp.setCost(DEFAULT_CELL_COST);
-        cellHash.put(startState, tmp);
-        startState = calculateKey(startState);
+		tmp = new CellInfo();
+		double totalPathCost = heuristic(startState, goalState);
+		tmp.setRhs(totalPathCost);
+		tmp.setG(totalPathCost);
+		tmp.setCost(DEFAULT_CELL_COST);
+		cellHash.put(startState, tmp);
+		startState = calculateKey(startState);
 
-        lastState = startState;
+		lastState = startState;
 
-        Iterator<Pair<IPoint2,Double> > iterator = toAdd.iterator();
-        while(iterator.hasNext()) {
-            tempPoint = iterator.next();
-            updateCell(tempPoint.first().getX(), tempPoint.first().getY(), tempPoint.second());
-        }
-
-
-    }
+		Iterator<Pair<IPoint2, Double>> iterator = toAdd.iterator();
+		while (iterator.hasNext()) {
+			tempPoint = iterator.next();
+			updateCell(tempPoint.first().getX(), tempPoint.first().getY(), tempPoint.second());
+		}
+	}
 
     /*
      * As per [S. Koenig, 2002]
      */
-    private void updateVertex(State u)
-    {
-        LinkedList<State> s = new LinkedList<State>();
+	private void updateVertex(State u) {
+		LinkedList<State> s = new LinkedList<State>();
 
-        if (u.neq(goalState)) {
-            s = getSuccessors(u);
-            double tmp = Double.POSITIVE_INFINITY;
-            double tmp2;
+		if (u.neq(goalState)) {
+			s = getSuccessors(u);
+			double tmp = Double.POSITIVE_INFINITY;
+			double tmp2;
 
-            for (State i : s) {
-                tmp2 = getG(i) + calcCostToMove(u,i);
-                if (tmp2 < tmp) tmp = tmp2;
-            }
-            if (!close(getRHS(u),tmp)) setRHS(u,tmp);
-        }
+			for (State i : s) {
+				tmp2 = getG(i) + calcCostToMove(u, i);
+				if (tmp2 < tmp)
+					tmp = tmp2;
+			}
 
-        if (!close(getG(u),getRHS(u))) addOpenCandidate(u);
-    }
+			if (!isClose(getRHS(u), tmp))
+				setRHS(u, tmp);
+		}
+
+		if (!isClose(getG(u), getRHS(u)))
+			addOpenCandidate(u);
+	}
 
     /*
-     * Returns true if state u is on the open list or not by checking if
+     * Returns true if state is on the open list or not by checking if
      * it is in the hash table.
      */
-    private boolean isValid(State u)
+    private boolean isValid(State state)
     {
-        if (openHash.get(u) == null) return false;
-        if (!close(keyHashCode(u),openHash.get(u))) return false;
+        if (openHash.get(state) == null) {
+        	return false;
+        }
+        
+        if (!isClose(keyHashCode(state), openHash.get(state))) {
+        	return false;
+        
+        }
+        
         return true;
     }
 
@@ -505,24 +542,26 @@ public class DStarLite {
     /*
      * Sets the rhs value for state u
      */
-    private void setRHS(State u, double rhs)
+    private void setRHS(State state, double rhs)
     {
-        makeNewCell(u);
-        cellHash.get(u).setRhs(rhs);
+        makeNewCell(state);
+        cellHash.get(state).setRhs(rhs);
     }
 
     /*
      * Checks if a cell is in the hash table, if not it adds it in.
      */
-    private void makeNewCell(State u)
-    {
-        if (cellHash.get(u) != null) return;
-        CellInfo tmp = new CellInfo();
-        double costToGoal = heuristic(u,goalState);
-        tmp.setRhs(costToGoal);
-        tmp.setG(costToGoal);
-        cellHash.put(u, tmp);
-    }
+	private void makeNewCell(State state) {
+		if (cellHash.get(state) != null) {
+			return;
+		}
+
+		CellInfo tmp = new CellInfo();
+		double costToGoal = heuristic(state, goalState);
+		tmp.setRhs(costToGoal);
+		tmp.setG(costToGoal);
+		cellHash.put(state, tmp);
+	}
 
     /*
      * updateCell as per [S. Koenig, 2002]
@@ -543,32 +582,32 @@ public class DStarLite {
     /*
      * Inserts state u into openList and openHash
      */
-    private void addOpenCandidate(State u)
+    private void addOpenCandidate(State state)
     {
-        //iterator cur
         float csum;
+        state = calculateKey(state);
+        csum = keyHashCode(state);
 
-        u = calculateKey(u);
-        //cur = openHash.find(u);
-        csum = keyHashCode(u);
+		/*
+		 * Return if cell is already in list
+		 * 
+		 * TODO: this should be uncommented except it introduces a bug, I
+		 * suspect that there is a bug somewhere else and having duplicates in
+		 * the openList queue hides the problem...
+		 */
+		// if ((cur != openHash.end()) && (close(csum, cur->second))) return;
 
-        // return if cell is already in list. TODO: this should be
-        // uncommented except it introduces a bug, I suspect that there is a
-        // bug somewhere else and having duplicates in the openList queue
-        // hides the problem...
-        //if ((cur != openHash.end()) && (close(csum,cur->second))) return;
-
-        openHash.put(u, csum);
-        openCandidateQueue.add(u);
+        openHash.put(state, csum);
+        openCandidateQueue.add(state);
     }
 
     /*
      * Returns the key hash code for the state u, this is used to compare
      * a state that has been updated
      */
-    private float keyHashCode(State u)
+    private float keyHashCode(State state)
     {
-        return (float)(u.getKey().first() + 1193*u.getKey().second());
+        return (float)(state.getKey().first() + 1193 * state.getKey().second());
     }
 
     /*
@@ -589,8 +628,8 @@ public class DStarLite {
      */
     private double trueDist(State a, State b)
     {
-        float x = a.getX()-b.getX();
-        float y = a.getY()-b.getY();
+        float x = a.getX() - b.getX();
+        float y = a.getY() - b.getY();
         return Math.sqrt(x*x + y*y);
     }
 
@@ -619,10 +658,13 @@ public class DStarLite {
     /*
      * Returns true if x and y are within 10E-5, false otherwise
      */
-    private boolean close(double x, double y)
+    private boolean isClose(double var1, double var2)
     {
-        if (x == Double.POSITIVE_INFINITY && y == Double.POSITIVE_INFINITY) return true;
-        return (Math.abs(x-y) < 0.00001);
+        if (var1 == Double.POSITIVE_INFINITY && var2 == Double.POSITIVE_INFINITY) {
+        	return true;
+        }
+        
+        return (Math.abs(var1 - var2) < 0.00001);
     }
 
     public List<State> getPath()
