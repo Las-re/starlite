@@ -42,6 +42,26 @@ public class Main {
 		 * Took 100 miliseconds
 		 */
 		
+
+		
+		State aState = new State(-7, -4, 3);
+		State bState = new State(17, 6, 1);
+		System.out.println("Distance is " + fourteenWayDistance(aState, bState));
 	}
 
+	private static double fourteenWayDistance(State aState, State bState) {
+		// -7, -4, 3
+		// 17, 6, 1
+		// 26.07681
+		
+		int x1 = aState.getX();
+		int x2 = bState.getX();
+		int y1 = aState.getY();
+		int y2 = bState.getY();
+		int z1 = aState.getZ();
+		int z2 = bState.getZ();
+		
+		return Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) + (z1-z2)*(z1-z2));
+	}
+	
 }

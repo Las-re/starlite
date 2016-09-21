@@ -77,8 +77,7 @@ public class DStarLite {
         startCell.setRhs(totalPathCost); 
         startCell.setG(totalPathCost); 
         cellHash.put(startState, startCell);
-        
-        // TODO: Uncertain what this does
+
         startState = calculateKey(startState);  
 
         lastState = startState;
@@ -139,29 +138,27 @@ public class DStarLite {
      */
     private double heuristic(State a, State b)
     {
-        return eightCondist(a,b) * DEFAULT_CELL_COST;
+        return euclideanDistance(a,b) * DEFAULT_CELL_COST;
     }
-
-    /*
-     * Returns the 8-way distance between state a and state b
-     * TODO: 14 way in 3d?  
-     */
-	private double eightCondist(State aState, State bState) {
-		double temp;
+	
+	/*
+	 * -7, -4, 3
+	 * 17, 6, 1
+	 * = 26.07681
+	 * 
+	 * @param aState
+	 * @param bState
+	 * @return
+	 */
+	private double euclideanDistance(State aState, State bState) {
+		int x1 = aState.getX();
+		int x2 = bState.getX();
+		int y1 = aState.getY();
+		int y2 = bState.getY();
+		int z1 = aState.getZ();
+		int z2 = bState.getZ();
 		
-		// A: 5,7    
-		// B: 10, 14
-		double min = Math.abs(aState.getX() - bState.getX()); // -5  
-		double max = Math.abs(aState.getY() - bState.getY()); // -7
-
-		if (min > max) { // it is
-			temp = min; // temp = -5
-			min = max;  // min = -7
-			max = temp; // max = -5
-		}
-
-		// Parentheses, Exponents, Multiplication and Division, and Addition and Subtraction
-		return ((M_SQRT2 - 1.0) * min + max);  // (2-1) * -7 + -5  // 1 * -7 -5 // -7 -5 // -12 
+		return Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) + (z1-z2)*(z1-z2));
 	}
 
     /**
