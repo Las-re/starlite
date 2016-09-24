@@ -349,57 +349,69 @@ public class DStarLite {
 		tempState = new State(state.getX() + 1, state.getY(), state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);
 
-		tempState = new State(state.getX() + 1, state.getY() + 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
+		// tempState = new State(state.getX() + 1, state.getY() + 1,
+		// state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
 
 		tempState = new State(state.getX(), state.getY() + 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);
 
-		tempState = new State(state.getX() - 1, state.getY() + 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
+		// tempState = new State(state.getX() - 1, state.getY() + 1,
+		// state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
 
 		tempState = new State(state.getX() - 1, state.getY(), state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);
 
-		tempState = new State(state.getX() - 1, state.getY() - 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
+		// tempState = new State(state.getX() - 1, state.getY() - 1,
+		// state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
 
 		tempState = new State(state.getX(), state.getY() - 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);
 
-		tempState = new State(state.getX() + 1, state.getY() - 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
+		// tempState = new State(state.getX() + 1, state.getY() - 1,
+		// state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
 
 		// Up one z level
 		// Generate the successors, starting at the immediate right and moving
 		// in a clockwise manner
-		tempState = new State(state.getX() + 1, state.getY(), state.getZ() + 1, new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX() + 1, state.getY() + 1, state.getZ() + 1,
-				new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX(), state.getY() + 1, state.getZ() + 1, new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX() - 1, state.getY() + 1, state.getZ() + 1,
-				new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX() - 1, state.getY(), state.getZ() + 1, new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX() - 1, state.getY() - 1, state.getZ() + 1,
-				new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX(), state.getY() - 1, state.getZ() + 1, new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX() + 1, state.getY() - 1, state.getZ() + 1,
-				new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
+		// tempState = new State(state.getX() + 1, state.getY(), state.getZ() +
+		// 1, new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX() + 1, state.getY() + 1,
+		// state.getZ() + 1,
+		// new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX(), state.getY() + 1, state.getZ() +
+		// 1, new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX() - 1, state.getY() + 1,
+		// state.getZ() + 1,
+		// new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX() - 1, state.getY(), state.getZ() +
+		// 1, new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX() - 1, state.getY() - 1,
+		// state.getZ() + 1,
+		// new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX(), state.getY() - 1, state.getZ() +
+		// 1, new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX() + 1, state.getY() - 1,
+		// state.getZ() + 1,
+		// new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
 
 		tempState = new State(state.getX(), state.getY(), state.getZ() + 1, new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);
@@ -407,33 +419,41 @@ public class DStarLite {
 		// Down one z level
 		// Generate the successors, starting at the immediate right and moving
 		// in a clockwise manner
-		tempState = new State(state.getX() + 1, state.getY(), state.getZ() - 1, new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX() + 1, state.getY() + 1, state.getZ() - 1,
-				new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX(), state.getY() + 1, state.getZ() - 1, new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX() - 1, state.getY() + 1, state.getZ() - 1,
-				new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX() - 1, state.getY(), state.getZ() - 1, new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX() - 1, state.getY() - 1, state.getZ() - 1,
-				new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX(), state.getY() - 1, state.getZ() - 1, new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new State(state.getX() + 1, state.getY() - 1, state.getZ() - 1,
-				new Pair<Double, Double>(-1.0, -1.0));
-		successors.addFirst(tempState);
+		// tempState = new State(state.getX() + 1, state.getY(), state.getZ() -
+		// 1, new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX() + 1, state.getY() + 1,
+		// state.getZ() - 1,
+		// new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX(), state.getY() + 1, state.getZ() -
+		// 1, new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX() - 1, state.getY() + 1,
+		// state.getZ() - 1,
+		// new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX() - 1, state.getY(), state.getZ() -
+		// 1, new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX() - 1, state.getY() - 1,
+		// state.getZ() - 1,
+		// new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX(), state.getY() - 1, state.getZ() -
+		// 1, new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
+		//
+		// tempState = new State(state.getX() + 1, state.getY() - 1,
+		// state.getZ() - 1,
+		// new Pair<Double, Double>(-1.0, -1.0));
+		// successors.addFirst(tempState);
 
 		tempState = new State(state.getX(), state.getY(), state.getZ() - 1, new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);

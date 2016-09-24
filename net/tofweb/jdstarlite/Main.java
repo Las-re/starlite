@@ -14,10 +14,7 @@ public class Main {
 		dsl.init(3, 3, 3, 1, 1, 1);
 
 		// set impassable nodes
-		dsl.updateCell(2, 1, 0, -1);
-		dsl.updateCell(2, 0, 1, -1);
-		dsl.updateCell(2, 2, 1, -1);
-		dsl.updateCell(3, 0, 0, -1);
+		dsl.updateCell(2, 2, 2, -1);
 
 		// perform the pathfinding
 		dsl.pathfind();
