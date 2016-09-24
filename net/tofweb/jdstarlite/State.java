@@ -35,12 +35,6 @@ public class State implements Comparable<State> {
 		this.y = y;
 		this.z = z;		
 	}
-
-	public State(int x, int y, Pair<Double, Double> k) {
-		this.x = x;
-		this.y = y;
-		this.key = k;
-	}
 	
 	public State(int x, int y, int z, Pair<Double, Double> k) {
 		this.x = x;

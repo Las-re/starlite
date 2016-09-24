@@ -7,12 +7,13 @@ package net.tofweb.jdstarlite;
 public class IPoint2 {
 	private int x = 0;
 	private int y = 0;
+	private int z = 0;
 
 	public IPoint2() {
 
 	}
 
-	public IPoint2(int x, int y) {
+	public IPoint2(int x, int y, int z) {
 		this.x = x;
 		this.y = y;
 	}
@@ -33,4 +34,13 @@ public class IPoint2 {
 		this.y = y;
 	}
 
+	public int getZ() {
+		return z;
+	}
+
+	public void setZ(int z) {
+		this.z = z;
+	}
+
+	
 }

@@ -441,7 +441,7 @@ public class DStarLite {
 
 		for (Map.Entry<State, CellInfo> entry : cellHash.entrySet()) {
 			if (!isClose(entry.getValue().getCost(), DEFAULT_CELL_COST)) {
-				tempPoint = new Pair<IPoint2, Double>(new IPoint2(entry.getKey().getX(), entry.getKey().getY()),
+				tempPoint = new Pair<IPoint2, Double>(new IPoint2(entry.getKey().getX(), entry.getKey().getY(), entry.getKey().getZ()),
 						entry.getValue().getCost());
 				toAdd.add(tempPoint);
 			}
@@ -480,7 +480,7 @@ public class DStarLite {
 		Iterator<Pair<IPoint2, Double>> iterator = toAdd.iterator();
 		while (iterator.hasNext()) {
 			tempPoint = iterator.next();
-			updateCell(tempPoint.first().getX(), tempPoint.first().getY(), tempPoint.second());
+			updateCell(tempPoint.first().getX(), tempPoint.first().getY(), tempPoint.first().getZ(), tempPoint.second());
 		}
 	}
 
@@ -563,17 +563,18 @@ public class DStarLite {
     /*
      * updateCell as per [S. Koenig, 2002]
      */
-    public void updateCell(int x, int y, double val)
+    public void updateCell(int x, int y, int z, double val)
     {
-        State u = new State();
-        u.setX(x);
-        u.setY(y);
+        State state = new State();
+        state.setX(x);
+        state.setY(y);
+        state.setZ(z);
 
-        if ((u.eq(startState)) || (u.eq(goalState))) return;
+        if ((state.eq(startState)) || (state.eq(goalState))) return;
 
-        makeNewCell(u);
-        cellHash.get(u).setCost(val);
-        updateVertex(u);
+        makeNewCell(state);
+        cellHash.get(state).setCost(val);
+        updateVertex(state);
     }
 
     /*
