@@ -53,4 +53,9 @@ public class CellInfo {
 		this.cost = cost;
 	}
 
+	@Override
+	public String toString() {
+		return "CellInfo [g=" + g + ", rhs=" + rhs + ", cost=" + cost + "]";
+	}
+
 }

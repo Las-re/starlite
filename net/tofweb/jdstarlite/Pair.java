@@ -225,4 +225,10 @@ public class Pair<T, U> implements Cloneable {
         return hashCode;
     }
 
+	@Override
+	public String toString() {
+		return "Pair [object1=" + object1 + ", object2=" + object2 + "]";
+	}
+
+  
 }

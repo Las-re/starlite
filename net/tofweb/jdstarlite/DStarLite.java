@@ -93,7 +93,6 @@ public class DStarLite {
 	 * CalculateKey As per [S. Koenig, 2002]
 	 * 
 	 * Key of a node is a value that is going to be used to sort the open list
-	 * by
 	 * 
 	 * Key is a tuple value = [min(g(x), rhs(x)+h(x)); min(g(x), rhs(s)] These
 	 * keys are compared lexiographically so ...
@@ -102,11 +101,11 @@ public class DStarLite {
 	 * v.second )
 	 */
 	private State calculateKey(State state) {
-		double val = Math.min(getRHS(state), getG(state));
+		double cost = Math.min(getRHS(state), getG(state));
 
 		Pair<Double, Double> key = state.getKey();
-		key.setFirst(val + heuristic(state, startState) + k_m);
-		key.setSecond(val);
+		key.setFirst(cost + heuristic(state, startState) + k_m); 
+		key.setSecond(cost);
 
 		return state;
 	}
@@ -130,11 +129,11 @@ public class DStarLite {
 	 * Returns the g value for the provided state
 	 */
 	private double getG(State u) {
-		if (cellHash.get(u) == null) {
+		if (cellHash.get(u) == null) { // 2,2,2 is in here twice..  the first time with a non-infinity g and the second time with infinity g
 			return heuristic(u, goalState);
 		}
 
-		return cellHash.get(u).getG();
+		return cellHash.get(u).getG(); // FIXME Mine should return Infinity but doesn't
 	}
 
 	/*
@@ -180,7 +179,7 @@ public class DStarLite {
 			return false;
 		}
 
-		LinkedList<State> successorStates = new LinkedList<State>();
+		LinkedList<State> potentialNextStates = new LinkedList<State>();
 		State currentState = startState;
 
 		if (getG(startState) == Double.POSITIVE_INFINITY) {
@@ -190,10 +189,10 @@ public class DStarLite {
 
 		while (currentState.neq(goalState)) {
 			path.add(currentState);
-			successorStates = new LinkedList<State>();
-			successorStates = getSuccessors(currentState);
+			potentialNextStates = new LinkedList<State>();
+			potentialNextStates = getSuccessors(currentState);
 
-			if (successorStates.isEmpty()) {
+			if (potentialNextStates.isEmpty()) { 
 				// Hit a dead end
 				return false;
 			}
@@ -201,10 +200,10 @@ public class DStarLite {
 			double minimumCost = Double.POSITIVE_INFINITY;
 			State minimumState = new State();
 
-			for (State successorState : successorStates) {
-				double cost = calcCostToMove(currentState, successorState);
-				double euclideanDistance = trueDist(successorState, goalState) + trueDist(startState, successorState);
-				cost += getG(successorState);
+			for (State successorState : potentialNextStates) {
+				double cost = calcCostToMove(currentState, successorState); // 1.0
+				double euclideanDistance = trueDist(successorState, goalState) + trueDist(startState, successorState); // 1.4142135623730951 + 1.4142135623730951
+				cost += getG(successorState); // 1.7320508075688772
 
 				// If the cost to move is essentially zero ...
 				if (isClose(cost, minimumCost)) {
@@ -213,12 +212,12 @@ public class DStarLite {
 						minimumState = successorState;
 					}
 				} else if (cost < minimumCost) {
-					minimumCost = cost;
+					minimumCost = cost; // Falling in here where it shouldnt
 					minimumState = successorState;
 				}
 			}
 
-			successorStates.clear();
+			potentialNextStates.clear();
 			currentState = new State(minimumState);
 		}
 
@@ -259,17 +258,7 @@ public class DStarLite {
 			State currentState = null;
 
 			// path is sane if the RHS(start) is NOT the G(start)
-			boolean pathIsSane = (getRHS(startState) != getG(startState)); // Determining
-																			// if
-																			// we
-																			// got
-																			// into
-																			// this
-																			// loop
-																			// by
-																			// sanity
-																			// check
-																			// failing
+			boolean pathIsSane = (getRHS(startState) != getG(startState)); 
 
 			// lazy remove
 			while (true) {
@@ -341,120 +330,25 @@ public class DStarLite {
 			return successors;
 		}
 
-		/*
-		 * Same z
-		 */
 		// Generate the successors, starting at the immediate right and moving
 		// in a clockwise manner
 		tempState = new State(state.getX() + 1, state.getY(), state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);
 
-		// tempState = new State(state.getX() + 1, state.getY() + 1,
-		// state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-
 		tempState = new State(state.getX(), state.getY() + 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);
-
-		// tempState = new State(state.getX() - 1, state.getY() + 1,
-		// state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
 
 		tempState = new State(state.getX() - 1, state.getY(), state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);
 
-		// tempState = new State(state.getX() - 1, state.getY() - 1,
-		// state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-
 		tempState = new State(state.getX(), state.getY() - 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);
 
-		// tempState = new State(state.getX() + 1, state.getY() - 1,
-		// state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-
 		// Up one z level
-		// Generate the successors, starting at the immediate right and moving
-		// in a clockwise manner
-		// tempState = new State(state.getX() + 1, state.getY(), state.getZ() +
-		// 1, new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX() + 1, state.getY() + 1,
-		// state.getZ() + 1,
-		// new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX(), state.getY() + 1, state.getZ() +
-		// 1, new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX() - 1, state.getY() + 1,
-		// state.getZ() + 1,
-		// new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX() - 1, state.getY(), state.getZ() +
-		// 1, new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX() - 1, state.getY() - 1,
-		// state.getZ() + 1,
-		// new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX(), state.getY() - 1, state.getZ() +
-		// 1, new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX() + 1, state.getY() - 1,
-		// state.getZ() + 1,
-		// new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-
 		tempState = new State(state.getX(), state.getY(), state.getZ() + 1, new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);
 
 		// Down one z level
-		// Generate the successors, starting at the immediate right and moving
-		// in a clockwise manner
-		// tempState = new State(state.getX() + 1, state.getY(), state.getZ() -
-		// 1, new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX() + 1, state.getY() + 1,
-		// state.getZ() - 1,
-		// new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX(), state.getY() + 1, state.getZ() -
-		// 1, new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX() - 1, state.getY() + 1,
-		// state.getZ() - 1,
-		// new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX() - 1, state.getY(), state.getZ() -
-		// 1, new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX() - 1, state.getY() - 1,
-		// state.getZ() - 1,
-		// new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX(), state.getY() - 1, state.getZ() -
-		// 1, new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-		//
-		// tempState = new State(state.getX() + 1, state.getY() - 1,
-		// state.getZ() - 1,
-		// new Pair<Double, Double>(-1.0, -1.0));
-		// successors.addFirst(tempState);
-
 		tempState = new State(state.getX(), state.getY(), state.getZ() - 1, new Pair<Double, Double>(-1.0, -1.0));
 		successors.addFirst(tempState);
 
@@ -587,26 +481,29 @@ public class DStarLite {
 	/*
 	 * As per [S. Koenig, 2002]
 	 */
-	private void updateVertex(State u) {
-		LinkedList<State> s = new LinkedList<State>();
+	private void updateVertex(State state) {
+		LinkedList<State> successors = new LinkedList<State>();
 
-		if (u.neq(goalState)) {
-			s = getSuccessors(u);
+		if (state.neq(goalState)) {
+			successors = getSuccessors(state);
 			double tmp = Double.POSITIVE_INFINITY;
 			double tmp2;
 
-			for (State i : s) {
-				tmp2 = getG(i) + calcCostToMove(u, i);
-				if (tmp2 < tmp)
+			for (State successor : successors) {
+				tmp2 = getG(successor) + calcCostToMove(state, successor);
+				if (tmp2 < tmp) {
 					tmp = tmp2;
+				}
 			}
 
-			if (!isClose(getRHS(u), tmp))
-				setRHS(u, tmp);
+			if (!isClose(getRHS(state), tmp)) {
+				setRHS(state, tmp);
+			}
 		}
 
-		if (!isClose(getG(u), getRHS(u)))
-			addOpenCandidate(u);
+		if (!isClose(getG(state), getRHS(state))) {
+			addOpenCandidate(state);
+		}
 	}
 
 	/*
@@ -660,17 +557,18 @@ public class DStarLite {
 	/*
 	 * updateCell as per [S. Koenig, 2002]
 	 */
-	public void updateCell(int x, int y, int z, double val) {
+	public void updateCell(int x, int y, int z, double cost) {
 		State state = new State();
 		state.setX(x);
 		state.setY(y);
 		state.setZ(z);
 
-		if ((state.eq(startState)) || (state.eq(goalState)))
+		if ((state.eq(startState)) || (state.eq(goalState))) {
 			return;
+		}
 
 		makeNewCell(state);
-		cellHash.get(state).setCost(val);
+		cellHash.get(state).setCost(cost);
 		updateVertex(state);
 	}
 
@@ -685,7 +583,7 @@ public class DStarLite {
 		/*
 		 * Return if cell is already in list
 		 * 
-		 * TODO: this should be uncommented except it introduces a bug, I
+		 * This should be uncommented except it introduces a bug, I
 		 * suspect that there is a bug somewhere else and having duplicates in
 		 * the openList queue hides the problem...
 		 */

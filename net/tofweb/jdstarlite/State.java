@@ -27,15 +27,9 @@ public class State implements Comparable<State> {
 	private Pair<Double, Double> key = new Pair<Double, Double>(0.0, 0.0);
 
 	public State() {
+		super();
+	}
 
-	}
-	
-	public State(int x, int y, int z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;		
-	}
-	
 	public State(int x, int y, int z, Pair<Double, Double> k) {
 		this.x = x;
 		this.y = y;
@@ -124,7 +118,6 @@ public class State implements Comparable<State> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((key == null) ? 0 : key.hashCode());
 		result = prime * result + x;
 		result = prime * result + y;
 		result = prime * result + z;
@@ -140,11 +133,6 @@ public class State implements Comparable<State> {
 		if (getClass() != obj.getClass())
 			return false;
 		State other = (State) obj;
-		if (key == null) {
-			if (other.key != null)
-				return false;
-		} else if (!key.equals(other.key))
-			return false;
 		if (x != other.x)
 			return false;
 		if (y != other.y)
@@ -152,6 +140,11 @@ public class State implements Comparable<State> {
 		if (z != other.z)
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "State [x=" + x + ", y=" + y + ", z=" + z + ", key=" + key + "]";
 	}
 
 }
