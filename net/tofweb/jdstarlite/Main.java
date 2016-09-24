@@ -11,7 +11,7 @@ public class Main {
 		DStarLite dsl = new DStarLite();
 
 		// set start and goal nodes
-		dsl.init(40135, 35214, -55123, -49452);
+		dsl.init(3, 3, 3, 1, 1, 1);
 
 		// set impassable nodes
 		dsl.updateCell(2, 1, 0, -1);
@@ -25,21 +25,19 @@ public class Main {
 		// get and print the path
 		List<State> path = dsl.getPath();
 		State lastState = null;
-		for (State i : path) {
-			//System.out.println("x: " + i.x + " y: " + i.y);
-			lastState = i;
+		for (State state : path) {
+			System.out.println("x: " + state.getX() + " y: " + state.getY() + " z: " + state.getZ());
+			lastState = state;
 		}
 
 		Long end = new Date().getTime();
-		
+
 		System.out.println("Used " + path.size() + " steps");
 		System.out.println("Ended at " + lastState.getX() + ", " + lastState.getY());
-		System.out.println("Took " + (end-start) + " miliseconds");
-		
+		System.out.println("Took " + (end - start) + " miliseconds");
+
 		/*
-		 * Used 95259 steps
-		 * Ended at -55123, -49452
-		 * Took 100 miliseconds
+		 * Used 95259 steps Ended at -55123, -49452 Took 100 miliseconds
 		 */
 	}
 
