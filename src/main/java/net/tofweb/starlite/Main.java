@@ -1,4 +1,4 @@
-package net.tofweb.jdstarlite;
+package net.tofweb.starlite;
 
 import java.util.Date;
 import java.util.List;

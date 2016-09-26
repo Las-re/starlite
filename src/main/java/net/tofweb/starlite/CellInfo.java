@@ -1,4 +1,4 @@
-package net.tofweb.jdstarlite;
+package net.tofweb.starlite;
 
 /*
  * @author Lynn Owens

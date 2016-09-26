@@ -1,4 +1,4 @@
-package net.tofweb.jdstarlite;
+package net.tofweb.starlite;
 
 import java.util.ArrayList;
 import java.util.HashMap;
