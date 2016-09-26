@@ -16,6 +16,7 @@ public class IPoint2 {
 	public IPoint2(int x, int y, int z) {
 		this.x = x;
 		this.y = y;
+		this.z = y;
 	}
 
 	public int getX() {

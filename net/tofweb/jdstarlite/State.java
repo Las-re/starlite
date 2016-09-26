@@ -33,7 +33,7 @@ public class State implements Comparable<State> {
 	public State(int x, int y, int z, Pair<Double, Double> k) {
 		this.x = x;
 		this.y = y;
-		this.z = z;
+		this.z = z;	
 		this.key = k;
 	}
 

@@ -11,10 +11,12 @@ public class Main {
 		DStarLite dsl = new DStarLite();
 
 		// set start and goal nodes
-		dsl.init(3, 3, 3, 1, 1, 1);
+		dsl.init(10, 7, 7, 1, 1, -1);
 
 		// set impassable nodes
-		dsl.updateCell(2, 2, 2, -1);
+		dsl.updateCell(6, 6, 6, -1);
+		dsl.updateCell(2, 1, 1, -1);
+		dsl.updateCell(2, 2, 1, -1);
 
 		// perform the pathfinding
 		dsl.pathfind();
@@ -30,12 +32,8 @@ public class Main {
 		Long end = new Date().getTime();
 
 		System.out.println("Used " + path.size() + " steps");
-		System.out.println("Ended at " + lastState.getX() + ", " + lastState.getY());
+		System.out.println("Ended at " + lastState.getX() + ", " + lastState.getY() + ", " + lastState.getZ());
 		System.out.println("Took " + (end - start) + " miliseconds");
-
-		/*
-		 * Used 95259 steps Ended at -55123, -49452 Took 100 miliseconds
-		 */
 	}
 
 }

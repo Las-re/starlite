@@ -40,7 +40,7 @@ public class DStarLite {
 	private State goalState = new State();
 	private State lastState = new State();
 	private int maxSteps = 80000;
-	private PriorityQueue<State> openCandidateQueue = new PriorityQueue<State>(); //
+	private PriorityQueue<State> blockedStates = new PriorityQueue<State>(); //
 	private HashMap<State, CellInfo> cellHash = new HashMap<State, CellInfo>();
 	private HashMap<State, Float> openHash = new HashMap<State, Float>();
 
@@ -61,8 +61,8 @@ public class DStarLite {
 		path.clear();
 		openHash.clear();
 
-		while (!openCandidateQueue.isEmpty()) {
-			openCandidateQueue.poll();
+		while (!blockedStates.isEmpty()) {
+			blockedStates.poll();
 		}
 
 		k_m = 0;
@@ -104,7 +104,7 @@ public class DStarLite {
 		double cost = Math.min(getRHS(state), getG(state));
 
 		Pair<Double, Double> key = state.getKey();
-		key.setFirst(cost + heuristic(state, startState) + k_m); 
+		key.setFirst(cost + heuristic(state, startState) + k_m);
 		key.setSecond(cost);
 
 		return state;
@@ -129,11 +129,12 @@ public class DStarLite {
 	 * Returns the g value for the provided state
 	 */
 	private double getG(State u) {
-		if (cellHash.get(u) == null) { // 2,2,2 is in here twice..  the first time with a non-infinity g and the second time with infinity g
+		if (cellHash.get(u) == null) { // 3,2,1 rhs is infinity but cost isn't
 			return heuristic(u, goalState);
 		}
 
-		return cellHash.get(u).getG(); // FIXME Mine should return Infinity but doesn't
+		return cellHash.get(u).getG(); // FIXME Mine should return Infinity but
+										// doesn't
 	}
 
 	/*
@@ -192,7 +193,7 @@ public class DStarLite {
 			potentialNextStates = new LinkedList<State>();
 			potentialNextStates = getSuccessors(currentState);
 
-			if (potentialNextStates.isEmpty()) { 
+			if (potentialNextStates.isEmpty()) {
 				// Hit a dead end
 				return false;
 			}
@@ -201,8 +202,15 @@ public class DStarLite {
 			State minimumState = new State();
 
 			for (State successorState : potentialNextStates) {
+				
+				if (occupied(successorState)) {
+					continue;
+				}
+				
 				double cost = calcCostToMove(currentState, successorState); // 1.0
-				double euclideanDistance = trueDist(successorState, goalState) + trueDist(startState, successorState); // 1.4142135623730951 + 1.4142135623730951
+				double euclideanDistance = trueDist(successorState, goalState) + trueDist(startState, successorState); // 1.4142135623730951
+																														// +
+																														// 1.4142135623730951
 				cost += getG(successorState); // 1.7320508075688772
 
 				// If the cost to move is essentially zero ...
@@ -239,79 +247,55 @@ public class DStarLite {
 	private boolean computeShortestPath() {
 		LinkedList<State> states = new LinkedList<State>();
 
-		if (openCandidateQueue.isEmpty()) {
-			// We have no candidates to pursue
+		if (blockedStates.isEmpty()) {
 			return false;
 		}
 
 		int numSteps = 0;
 		startState = calculateKey(startState);
 
-		while ((!openCandidateQueue.isEmpty()) && (openCandidateQueue.peek().lt(startState))
-				|| (getRHS(startState) != getG(startState))) {
-			// increment step iterator and compare... if it is greater than max
-			// then abort
-			if (numSteps++ > maxSteps) {
-				throw new RuntimeException("Maximum number of iterations hit: " + maxSteps);
-			}
+		while (!blockedStates.isEmpty()) {
+			State potentiallyBlockedState = blockedStates.poll();
+			
+			if (potentiallyBlockedState.lt(startState) || (getRHS(startState) != getG(startState))) {
 
-			State currentState = null;
-
-			// path is sane if the RHS(start) is NOT the G(start)
-			boolean pathIsSane = (getRHS(startState) != getG(startState)); 
-
-			// lazy remove
-			while (true) {
-				if (openCandidateQueue.isEmpty()) {
-					// We have no candidates remaining to pursue
-					return false;
+				if (numSteps++ > maxSteps) {
+					throw new RuntimeException("Maximum number of iterations hit: " + maxSteps);
 				}
 
-				// Retrieve and remove the best candidate from the queue
-				currentState = openCandidateQueue.poll();
+				State currentState = potentiallyBlockedState;
 
-				if (!(currentState.lt(startState)) && (!pathIsSane)) {
-					// We've gone backwards or something and the path is corrupt
-					// FAIL
-					return false;
+				openHash.remove(currentState);
+
+				State previousState = new State(currentState);
+				currentState = calculateKey(currentState);
+
+				if (previousState.lt(currentState)) {
+					addOpenCandidate(currentState);
+				} else if (getG(currentState) > getRHS(currentState)) {
+					setG(currentState, getRHS(currentState));
+					states = getPredecessors(currentState);
+
+					// Apparently to indicate paths into the blocked state are
+					// inadvisable
+					for (State state : states) {
+						updateVertex(state);
+					}
+				} else {
+					setG(currentState, Double.POSITIVE_INFINITY);
+					states = getPredecessors(currentState);
+
+					// Apparently to indicate paths into the blocked state are
+					// inadvisable
+					for (State state : states) {
+						updateVertex(state);
+					}
+
+					updateVertex(currentState);
 				}
-
-				if (!isValid(currentState)) {
-					continue;
-				}
-
-				break;
-			}
-
-			openHash.remove(currentState);
-
-			State previousState = new State(currentState);
-			currentState = calculateKey(currentState);
-
-			if (previousState.lt(currentState)) {
-				// We need to consider heading back to where we came from
-				addOpenCandidate(currentState);
-			} else if (getG(currentState) > getRHS(currentState)) {
-				// We've gotten closer than we expected
-				setG(currentState, getRHS(currentState));
-				states = getPredecessors(currentState);
-
-				for (State state : states) {
-					updateVertex(state);
-				}
-			} else {
-				// g <= rhs, state has got worse
-				setG(currentState, Double.POSITIVE_INFINITY);
-				states = getPredecessors(currentState);
-
-				for (State state : states) {
-					updateVertex(state);
-				}
-
-				updateVertex(currentState);
 			}
 		}
-
+		
 		return true;
 	}
 
@@ -369,17 +353,7 @@ public class DStarLite {
 			predecessors.addFirst(tempState);
 		}
 
-		tempState = new State(state.getX() + 1, state.getY() + 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
-		if (!occupied(tempState)) {
-			predecessors.addFirst(tempState);
-		}
-
 		tempState = new State(state.getX(), state.getY() + 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
-		if (!occupied(tempState)) {
-			predecessors.addFirst(tempState);
-		}
-
-		tempState = new State(state.getX() - 1, state.getY() + 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
 		if (!occupied(tempState)) {
 			predecessors.addFirst(tempState);
 		}
@@ -389,17 +363,17 @@ public class DStarLite {
 			predecessors.addFirst(tempState);
 		}
 
-		tempState = new State(state.getX() - 1, state.getY() - 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
-		if (!occupied(tempState)) {
-			predecessors.addFirst(tempState);
-		}
-
 		tempState = new State(state.getX(), state.getY() - 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
 		if (!occupied(tempState)) {
 			predecessors.addFirst(tempState);
 		}
 
-		tempState = new State(state.getX() + 1, state.getY() - 1, state.getZ(), new Pair<Double, Double>(-1.0, -1.0));
+		tempState = new State(state.getX(), state.getY(), state.getZ() + 1, new Pair<Double, Double>(-1.0, -1.0));
+		if (!occupied(tempState)) {
+			predecessors.addFirst(tempState);
+		}
+
+		tempState = new State(state.getX(), state.getY(), state.getZ() - 1, new Pair<Double, Double>(-1.0, -1.0));
 		if (!occupied(tempState)) {
 			predecessors.addFirst(tempState);
 		}
@@ -410,9 +384,11 @@ public class DStarLite {
 	/*
 	 * Update the position of the agent/robot. This does not force a replan.
 	 */
-	public void updateStart(int x, int y) {
+	// TODO: Update to z
+	public void updateStart(int x, int y, int z) {
 		startState.setX(x);
 		startState.setY(y);
+		startState.setZ(z);
 
 		k_m += heuristic(lastState, startState);
 
@@ -428,7 +404,8 @@ public class DStarLite {
 	 * much. Also, it frees up a good deal of memory we are probably not going
 	 * to use.
 	 */
-	public void updateGoal(int x, int y) {
+	// TODO: Update to z
+	public void updateGoal(int x, int y, int z) {
 		List<Pair<IPoint2, Double>> toAdd = new ArrayList<Pair<IPoint2, Double>>();
 		Pair<IPoint2, Double> tempPoint;
 
@@ -444,14 +421,15 @@ public class DStarLite {
 		cellHash.clear();
 		openHash.clear();
 
-		while (!openCandidateQueue.isEmpty()) {
-			openCandidateQueue.poll();
+		while (!blockedStates.isEmpty()) {
+			blockedStates.poll();
 		}
 
 		k_m = 0;
 
 		goalState.setX(x);
 		goalState.setY(y);
+		goalState.setZ(z);
 
 		CellInfo tmp = new CellInfo();
 		tmp.setRhs(0);
@@ -497,38 +475,21 @@ public class DStarLite {
 			}
 
 			if (!isClose(getRHS(state), tmp)) {
-				setRHS(state, tmp);
+				setRHS(state, tmp); 
 			}
 		}
 
 		if (!isClose(getG(state), getRHS(state))) {
-			addOpenCandidate(state);
+			addOpenCandidate(state); 
 		}
-	}
-
-	/*
-	 * Returns true if state is on the open list or not by checking if it is in
-	 * the hash table.
-	 */
-	private boolean isValid(State state) {
-		if (openHash.get(state) == null) {
-			return false;
-		}
-
-		if (!isClose(keyHashCode(state), openHash.get(state))) {
-			return false;
-
-		}
-
-		return true;
 	}
 
 	/*
 	 * Sets the G value for state u
 	 */
-	private void setG(State u, double g) {
-		makeNewCell(u);
-		cellHash.get(u).setG(g);
+	private void setG(State state, double g) {
+		makeNewCell(state);
+		cellHash.get(state).setG(g);
 	}
 
 	/*
@@ -583,14 +544,14 @@ public class DStarLite {
 		/*
 		 * Return if cell is already in list
 		 * 
-		 * This should be uncommented except it introduces a bug, I
-		 * suspect that there is a bug somewhere else and having duplicates in
-		 * the openList queue hides the problem...
+		 * This should be uncommented except it introduces a bug, I suspect that
+		 * there is a bug somewhere else and having duplicates in the openList
+		 * queue hides the problem...
 		 */
 		// if ((cur != openHash.end()) && (close(csum, cur->second))) return;
 
 		openHash.put(state, csum);
-		openCandidateQueue.add(state);
+		blockedStates.add(state);
 	}
 
 	/*
@@ -620,7 +581,8 @@ public class DStarLite {
 	private double trueDist(State a, State b) {
 		float x = a.getX() - b.getX();
 		float y = a.getY() - b.getY();
-		return Math.sqrt(x * x + y * y);
+		float z = a.getZ() - b.getZ();
+		return Math.sqrt(x * x + y * y + z * z);
 	}
 
 	/*
@@ -631,9 +593,10 @@ public class DStarLite {
 	private double calcCostToMove(State a, State b) {
 		int xd = Math.abs(a.getX() - b.getX());
 		int yd = Math.abs(a.getY() - b.getY());
+		int zd = Math.abs(a.getZ() - b.getZ());
 		double scale = 1;
 
-		if (xd + yd > 1) {
+		if (xd + yd + zd > 1) {
 			scale = M_SQRT2;
 		}
 
