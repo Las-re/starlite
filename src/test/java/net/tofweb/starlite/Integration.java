@@ -12,22 +12,23 @@ public class Integration {
 
 	@Test
 	public void test() {
-		DStarLite dsl = new DStarLite();
 
 		// set start and goal nodes
-		dsl.init(10, 7, 7, 1, 1, -1);
+		Cell startCell = new Cell(10, 7, 7);
+		Cell endCell = new Cell(1, 1, -1);
+		Pathfinder dsl = new Pathfinder(startCell, endCell);
 
 		// set impassable nodes
-		dsl.updateCell(6, 6, 6, -1);
-		dsl.updateCell(2, 1, 1, -1);
-		dsl.updateCell(2, 2, 1, -1);
+		dsl.blockCell(new Cell(6, 6, 6));
+		dsl.blockCell(new Cell(2, 1, 1));
+		dsl.blockCell(new Cell(2, 2, 1));
 
 		// perform the pathfinding
 		dsl.pathfind();
 
 		// get and print the path
-		List<State> path = dsl.getPath();
-		for (State state : path) {
+		List<Cell> path = dsl.getPath();
+		for (Cell state : path) {
 			System.out.println("x: " + state.getX() + " y: " + state.getY() + " z: " + state.getZ());
 		}
 
@@ -36,7 +37,7 @@ public class Integration {
 		Integer size = path.size();
 		assertTrue(24 == size);
 
-		State end = path.get(--size);
+		Cell end = path.get(--size);
 		assertEquals(1, end.getX());
 		assertEquals(1, end.getY());
 		assertEquals(-1, end.getZ());

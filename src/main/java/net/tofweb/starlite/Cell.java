@@ -20,24 +20,31 @@ package net.tofweb.starlite;
  * @author Lynn Owens
  * https://github.com/LynnOwens
  */
-public class State implements Comparable<State> {
+public class Cell implements Comparable<Cell> {
 	private int x = 0;
 	private int y = 0;
 	private int z = 0;
-	private Pair<Double, Double> key = new Pair<Double, Double>(0.0, 0.0);
+	private Costs key = new Costs(0.0, 0.0);
 
-	public State() {
+	public Cell() {
 		super();
 	}
 
-	public State(int x, int y, int z, Pair<Double, Double> k) {
+	public Cell(int x, int y, int z) {
+		super();
 		this.x = x;
 		this.y = y;
-		this.z = z;	
+		this.z = z;
+	}
+
+	public Cell(int x, int y, int z, Costs k) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
 		this.key = k;
 	}
 
-	public State(State other) {
+	public Cell(Cell other) {
 		this.x = other.x;
 		this.y = other.y;
 		this.z = other.z;
@@ -68,31 +75,31 @@ public class State implements Comparable<State> {
 		this.z = z;
 	}
 
-	public Pair<Double, Double> getKey() {
+	public Costs getKey() {
 		return key;
 	}
 
-	public void setKey(Pair<Double, Double> key) {
+	public void setKey(Costs key) {
 		this.key = key;
 	}
 
 	// Equals
-	public boolean eq(final State s2) {
+	public boolean eq(final Cell s2) {
 		return ((this.x == s2.x) && (this.y == s2.y) && (this.z == s2.z));
 	}
 
 	// Not Equals
-	public boolean neq(final State s2) {
+	public boolean neq(final Cell s2) {
 		return ((this.x != s2.x) || (this.y != s2.y) || (this.z != s2.z));
 	}
 
 	// Less than
-	public boolean lt(final State s2) {
-		if (key.first() + 0.000001 < s2.key.first())
+	public boolean lt(final Cell s2) {
+		if (key.getCostPlusHeuristic() + 0.000001 < s2.key.getCostPlusHeuristic())
 			return true;
-		else if (key.first() - 0.000001 > s2.key.first())
+		else if (key.getCostPlusHeuristic() - 0.000001 > s2.key.getCostPlusHeuristic())
 			return false;
-		return key.second() < s2.key.second();
+		return key.getCost() < s2.key.getCost();
 	}
 
 	/**
@@ -101,15 +108,15 @@ public class State implements Comparable<State> {
 	 * @param other
 	 * @return
 	 */
-	//@Override
-	public int compareTo(State other) {
-		if (key.first() - 0.00001 > other.key.first())
+	// @Override
+	public int compareTo(Cell other) {
+		if (key.getCostPlusHeuristic() - 0.00001 > other.key.getCostPlusHeuristic())
 			return 1;
-		else if (key.first() < other.key.first() - 0.00001)
+		else if (key.getCostPlusHeuristic() < other.key.getCostPlusHeuristic() - 0.00001)
 			return -1;
-		if (key.second() > other.key.second())
+		if (key.getCost() > other.key.getCost())
 			return 1;
-		else if (key.second() < other.key.second())
+		else if (key.getCost() < other.key.getCost())
 			return -1;
 		return 0;
 	}
@@ -132,7 +139,7 @@ public class State implements Comparable<State> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		State other = (State) obj;
+		Cell other = (Cell) obj;
 		if (x != other.x)
 			return false;
 		if (y != other.y)
@@ -144,7 +151,7 @@ public class State implements Comparable<State> {
 
 	@Override
 	public String toString() {
-		return "State [x=" + x + ", y=" + y + ", z=" + z + ", key=" + key + "]";
+		return "Cell [x=" + x + ", y=" + y + ", z=" + z + ", key=" + key + "]";
 	}
 
 }

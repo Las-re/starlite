@@ -8,10 +8,10 @@ public class CellInfo {
 	private double g;
 	private double rhs;
 	private double cost;
-	
+
 	public CellInfo() {
 		super();
-		this.cost = DStarLite.DEFAULT_CELL_COST;
+		this.cost = Pathfinder.DEFAULT_CELL_COST;
 	}
 
 	/**
@@ -28,7 +28,7 @@ public class CellInfo {
 	}
 
 	/**
-	 * Right Hand Side, heuristic.  g + estimated cost to move to this cell
+	 * Right Hand Side, heuristic. g + estimated cost to move to this cell
 	 * 
 	 * @return
 	 */
