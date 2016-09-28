@@ -21,6 +21,10 @@ package net.tofweb.starlite;
  * https://github.com/LynnOwens
  */
 public class Cell implements Comparable<Cell> {
+
+	public static final Double BILLIONTH = 0.000001;
+	public static final double DEFAULT_COST = 1.0;
+
 	private int x = 0;
 	private int y = 0;
 	private int z = 0;
@@ -83,40 +87,31 @@ public class Cell implements Comparable<Cell> {
 		this.key = key;
 	}
 
-	// Equals
-	public boolean eq(final Cell s2) {
-		return ((this.x == s2.x) && (this.y == s2.y) && (this.z == s2.z));
-	}
-
-	// Not Equals
-	public boolean neq(final Cell s2) {
-		return ((this.x != s2.x) || (this.y != s2.y) || (this.z != s2.z));
-	}
-
-	// Less than
-	public boolean lt(final Cell s2) {
-		if (key.getCostPlusHeuristic() + 0.000001 < s2.key.getCostPlusHeuristic())
+	/*
+	 * Is this Cell closer than the parameter Cell?
+	 */
+	public boolean isCloser(Cell otherCell) {
+		if (key.getCostPlusHeuristic() + BILLIONTH < otherCell.getKey().getCostPlusHeuristic())
 			return true;
-		else if (key.getCostPlusHeuristic() - 0.000001 > s2.key.getCostPlusHeuristic())
+		else if (key.getCostPlusHeuristic() - BILLIONTH > otherCell.getKey().getCostPlusHeuristic())
 			return false;
-		return key.getCost() < s2.key.getCost();
+		return key.getCost() < otherCell.getKey().getCost();
 	}
 
 	/**
 	 * Required for PriorityQueue
 	 * 
-	 * @param other
+	 * @param o
 	 * @return
 	 */
-	// @Override
-	public int compareTo(Cell other) {
-		if (key.getCostPlusHeuristic() - 0.00001 > other.key.getCostPlusHeuristic())
+	public int compareTo(Cell o) {
+		if (key.getCostPlusHeuristic() - BILLIONTH > o.key.getCostPlusHeuristic())
 			return 1;
-		else if (key.getCostPlusHeuristic() < other.key.getCostPlusHeuristic() - 0.00001)
+		else if (key.getCostPlusHeuristic() < o.key.getCostPlusHeuristic() - BILLIONTH)
 			return -1;
-		if (key.getCost() > other.key.getCost())
+		if (key.getCost() > o.key.getCost())
 			return 1;
-		else if (key.getCost() < other.key.getCost())
+		else if (key.getCost() < o.key.getCost())
 			return -1;
 		return 0;
 	}

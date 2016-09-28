@@ -16,18 +16,19 @@ public class Integration {
 		// set start and goal nodes
 		Cell startCell = new Cell(10, 7, 7);
 		Cell endCell = new Cell(1, 1, -1);
-		Pathfinder dsl = new Pathfinder(startCell, endCell);
+		Pathfinder pathfinder = new Pathfinder(startCell, endCell);
 
 		// set impassable nodes
-		dsl.blockCell(new Cell(6, 6, 6));
-		dsl.blockCell(new Cell(2, 1, 1));
-		dsl.blockCell(new Cell(2, 2, 1));
+		CellSpace space = pathfinder.getSpace();
+		space.blockCell(new Cell(6, 6, 6));
+		space.blockCell(new Cell(2, 1, 1));
+		space.blockCell(new Cell(2, 2, 1));
 
 		// perform the pathfinding
-		dsl.pathfind();
+		pathfinder.findPath();
 
 		// get and print the path
-		List<Cell> path = dsl.getPath();
+		List<Cell> path = pathfinder.getPath();
 		for (Cell state : path) {
 			System.out.println("x: " + state.getX() + " y: " + state.getY() + " z: " + state.getZ());
 		}

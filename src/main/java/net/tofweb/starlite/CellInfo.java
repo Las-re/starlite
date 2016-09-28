@@ -11,7 +11,7 @@ public class CellInfo {
 
 	public CellInfo() {
 		super();
-		this.cost = Pathfinder.DEFAULT_CELL_COST;
+		this.cost = Cell.DEFAULT_COST;
 	}
 
 	/**
