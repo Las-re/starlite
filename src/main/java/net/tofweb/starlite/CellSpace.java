@@ -4,6 +4,27 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
+/*
+ * @author daniel beard
+ * http://danielbeard.wordpress.com
+ * http://github.com/paintstripper
+ * https://github.com/daniel-beard/DStarLiteJava
+ *
+ * Copyright (C) 2012 Daniel Beard
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * @author Lynn Owens
+ * https://github.com/LynnOwens
+ */
 public class CellSpace {
 
 	private HashMap<Cell, CellInfo> cellHash = new HashMap<Cell, CellInfo>();
@@ -11,7 +32,6 @@ public class CellSpace {
 	private PriorityQueue<Cell> blockedCells = new PriorityQueue<Cell>();
 	private Cell startCell;
 	private Cell goalCell;
-	private Integer maxSteps = 80000;
 	private double kM = 0.0;
 
 	public void blockCell(Cell blockedCell) {
@@ -126,6 +146,7 @@ public class CellSpace {
 	 * Returns true if the cell is occupied (non-traversable), false otherwise.
 	 * Non-traversable are marked with a cost < 0
 	 */
+	// TODO abstract out some blocker or opener service
 	public boolean isBlocked(Cell state) {
 		if (cellHash.get(state) == null) {
 			return false;
@@ -250,71 +271,6 @@ public class CellSpace {
 	public void setGoalCell(Cell goalCell) {
 		this.goalCell = goalCell;
 		this.cellHash.put(goalCell, new CellInfo());
-	}
-
-	/*
-	 * As per [S. Koenig,2002] except for two main modifications:
-	 * 
-	 * 1. We stop planning after a number of steps, 'maxsteps' we do this
-	 * because this algorithm can plan forever if the start is surrounded by
-	 * obstacles 2. We lazily remove states from the open list so we never have
-	 * to iterate through it.
-	 * 
-	 * Returns false if there is no path to goal
-	 */
-	public boolean canPath() {
-		LinkedList<Cell> states = new LinkedList<Cell>();
-
-		if (blockedCells.isEmpty()) {
-			return false;
-		}
-
-		int numSteps = 0;
-		setStartCell(calculateKey(getStartCell()));
-
-		while (!blockedCells.isEmpty()) {
-			Cell potentiallyBlockedState = blockedCells.poll();
-
-			if (potentiallyBlockedState.isCloser(getStartCell()) || (getRHS(getStartCell()) != getG(getStartCell()))) {
-
-				if (numSteps++ > maxSteps) {
-					throw new RuntimeException("Maximum number of iterations hit: " + maxSteps);
-				}
-
-				Cell currentState = potentiallyBlockedState;
-
-				openHash.remove(currentState);
-
-				Cell previousState = new Cell(currentState);
-				currentState = calculateKey(currentState);
-
-				if (previousState.isCloser(currentState)) {
-					addBlockedCell(currentState);
-				} else if (getG(currentState) > getRHS(currentState)) {
-					setG(currentState, getRHS(currentState));
-					states = getPredecessors(currentState);
-
-					// Apparently to indicate paths into the blocked state are
-					// inadvisable
-					for (Cell state : states) {
-						updateVertex(state);
-					}
-				} else {
-					setG(currentState, Double.POSITIVE_INFINITY);
-					states = getPredecessors(currentState);
-
-					// Apparently to indicate paths into the blocked state are
-					// inadvisable
-					for (Cell state : states) {
-						updateVertex(state);
-					}
-
-					updateVertex(currentState);
-				}
-			}
-		}
-
-		return true;
 	}
 
 	/*

@@ -20,12 +20,20 @@ public class Integration {
 
 		// set impassable nodes
 		CellSpace space = pathfinder.getSpace();
-		space.blockCell(new Cell(6, 6, 6));
-		space.blockCell(new Cell(2, 1, 1));
-		space.blockCell(new Cell(2, 2, 1));
+		// space.blockCell(new Cell(6, 6, 6));
+		// space.blockCell(new Cell(6, 6, 4));
+		// space.blockCell(new Cell(2, 1, 1));
+		// space.blockCell(new Cell(2, 2, 1));
+
+		// space.blockCell(new Cell(11, 7, 7));
+		// space.blockCell(new Cell(10, 8, 7));
+		// space.blockCell(new Cell(9, 7, 7));
+		// space.blockCell(new Cell(10, 6, 7));
+		// space.blockCell(new Cell(10, 7, 8));
+		// space.blockCell(new Cell(10, 7, 6));
 
 		// perform the pathfinding
-		pathfinder.findPath();
+		assertTrue(pathfinder.findPath());
 
 		// get and print the path
 		List<Cell> path = pathfinder.getPath();

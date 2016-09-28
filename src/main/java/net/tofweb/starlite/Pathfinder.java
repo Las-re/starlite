@@ -34,7 +34,6 @@ public class Pathfinder {
 		super();
 		space.setGoalCell(goalCell);
 		space.setStartCell(startCell);
-
 	}
 
 	/**
@@ -47,10 +46,6 @@ public class Pathfinder {
 	public boolean findPath() {
 		path.clear();
 
-		if (!space.canPath()) {
-			return false;
-		}
-
 		LinkedList<Cell> potentialNextCells = new LinkedList<Cell>();
 		Cell currentCell = space.getStartCell();
 
@@ -58,7 +53,9 @@ public class Pathfinder {
 			return false;
 		}
 
-		while (!currentCell.equals(space.getGoalCell())) {
+		boolean isTrapped = false;
+		while (!currentCell.equals(space.getGoalCell()) && !isTrapped) {
+			isTrapped = true;
 			path.add(currentCell);
 			potentialNextCells = space.getSuccessors(currentCell);
 
@@ -73,6 +70,8 @@ public class Pathfinder {
 
 				if (space.isBlocked(potentialNextCell)) {
 					continue;
+				} else {
+					isTrapped = false;
 				}
 
 				double costToMove = Geometry.calcCostToMove(currentCell, potentialNextCell);
@@ -92,13 +91,16 @@ public class Pathfinder {
 				}
 			}
 
-			potentialNextCells.clear();
-			currentCell = new Cell(minimumCell);
+			if (!isTrapped) {
+				potentialNextCells.clear();
+				currentCell = new Cell(minimumCell);
+			}
 		}
 
-		path.add(space.getGoalCell());
+		if (!isTrapped)
+			path.add(space.getGoalCell());
 
-		return true;
+		return !isTrapped;
 	}
 
 	public List<Cell> getPath() {
