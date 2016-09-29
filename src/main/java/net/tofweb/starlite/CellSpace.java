@@ -1,8 +1,6 @@
 package net.tofweb.starlite;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
 
 /*
  * @author daniel beard
@@ -28,49 +26,11 @@ import java.util.PriorityQueue;
 public class CellSpace {
 
 	private HashMap<Cell, CellInfo> cellHash = new HashMap<Cell, CellInfo>();
-	private HashMap<Cell, Float> openHash = new HashMap<Cell, Float>();
-	private PriorityQueue<Cell> blockedCells = new PriorityQueue<Cell>();
 	private Cell startCell;
 	private Cell goalCell;
-	private double kM = 0.0;
 
-	public void blockCell(Cell blockedCell) {
-		if ((blockedCell.equals(startCell)) || (blockedCell.equals(goalCell))) {
-			return;
-		}
-
-		double cost = -1;
-		makeNewCell(blockedCell);
-		cellHash.get(blockedCell).setCost(cost);
-		updateVertex(blockedCell);
-	}
-
-	/*
-	 * As per [S. Koenig, 2002]
-	 */
-	private void updateVertex(Cell state) {
-		LinkedList<Cell> successors = new LinkedList<Cell>();
-
-		if (!state.equals(goalCell)) {
-			successors = getSuccessors(state);
-			double tmp = Double.POSITIVE_INFINITY;
-			double tmp2;
-
-			for (Cell successor : successors) {
-				tmp2 = getG(successor) + Geometry.calcCostToMove(state, successor);
-				if (tmp2 < tmp) {
-					tmp = tmp2;
-				}
-			}
-
-			if (!isClose(getRHS(state), tmp)) {
-				setRHS(state, tmp);
-			}
-		}
-
-		if (!isClose(getG(state), getRHS(state))) {
-			addBlockedCell(state);
-		}
+	public CellInfo getInfo(Cell cell) {
+		return cellHash.get(cell);
 	}
 
 	/*
@@ -86,6 +46,10 @@ public class CellSpace {
 		}
 
 		return cellHash.get(state).getRhs();
+	}
+
+	public void updateCellCost(Cell cell, double cost) {
+		cellHash.get(cell).setCost(cost);
 	}
 
 	/*
@@ -131,113 +95,6 @@ public class CellSpace {
 	}
 
 	/*
-	 * Inserts state u into openList and openHash
-	 */
-	public void addBlockedCell(Cell cell) {
-		float csum;
-		cell = calculateKey(cell);
-		csum = cell.getKey().hashCode();
-
-		openHash.put(cell, csum);
-		blockedCells.add(cell);
-	}
-
-	/*
-	 * Returns true if the cell is occupied (non-traversable), false otherwise.
-	 * Non-traversable are marked with a cost < 0
-	 */
-	// TODO abstract out some blocker or opener service
-	public boolean isBlocked(Cell state) {
-		if (cellHash.get(state) == null) {
-			return false;
-		}
-
-		return (cellHash.get(state).getCost() < 0);
-	}
-
-	/*
-	 * Returns a list of successor states for state u, since this is an 8-way
-	 * graph this list contains all of a cells neighbours. Unless the cell is
-	 * occupied, in which case it has no successors.
-	 */
-	public LinkedList<Cell> getSuccessors(Cell state) {
-		LinkedList<Cell> successors = new LinkedList<Cell>();
-		Cell tempState;
-
-		if (isBlocked(state)) {
-			// We cannot move into this cell
-			// Therefore it has no successor states
-			return successors;
-		}
-
-		// Generate the successors, starting at the immediate right and moving
-		// in a clockwise manner
-		tempState = new Cell(state.getX() + 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new Cell(state.getX(), state.getY() + 1, state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new Cell(state.getX() - 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		tempState = new Cell(state.getX(), state.getY() - 1, state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		// Up one z level
-		tempState = new Cell(state.getX(), state.getY(), state.getZ() + 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		// Down one z level
-		tempState = new Cell(state.getX(), state.getY(), state.getZ() - 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
-
-		return successors;
-	}
-
-	/*
-	 * Returns a list of all the predecessor states for state u. Since this is
-	 * for an 8-way connected graph, the list contains all the neighbours for
-	 * state u. Occupied neighbours are not added to the list
-	 */
-	public LinkedList<Cell> getPredecessors(Cell state) {
-		LinkedList<Cell> predecessors = new LinkedList<Cell>();
-		Cell tempState;
-
-		tempState = new Cell(state.getX() + 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
-		if (!isBlocked(tempState)) {
-			predecessors.addFirst(tempState);
-		}
-
-		tempState = new Cell(state.getX(), state.getY() + 1, state.getZ(), new Costs(-1.0, -1.0));
-		if (!isBlocked(tempState)) {
-			predecessors.addFirst(tempState);
-		}
-
-		tempState = new Cell(state.getX() - 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
-		if (!isBlocked(tempState)) {
-			predecessors.addFirst(tempState);
-		}
-
-		tempState = new Cell(state.getX(), state.getY() - 1, state.getZ(), new Costs(-1.0, -1.0));
-		if (!isBlocked(tempState)) {
-			predecessors.addFirst(tempState);
-		}
-
-		tempState = new Cell(state.getX(), state.getY(), state.getZ() + 1, new Costs(-1.0, -1.0));
-		if (!isBlocked(tempState)) {
-			predecessors.addFirst(tempState);
-		}
-
-		tempState = new Cell(state.getX(), state.getY(), state.getZ() - 1, new Costs(-1.0, -1.0));
-		if (!isBlocked(tempState)) {
-			predecessors.addFirst(tempState);
-		}
-
-		return predecessors;
-	}
-
-	/*
 	 * Returns true if x and y are within 10E-5, false otherwise
 	 */
 	public boolean isClose(double var1, double var2) {
@@ -273,22 +130,12 @@ public class CellSpace {
 		this.cellHash.put(goalCell, new CellInfo());
 	}
 
-	/*
-	 * CalculateKey As per [S. Koenig, 2002]
-	 * 
-	 * Key of a node is a value that is going to be used to sort the open list
-	 * 
-	 * Key is a tuple value = [min(g(x), rhs(x)+h(x)); min(g(x), rhs(s)] These
-	 * keys are compared lexiographically so ...
-	 * 
-	 * u < v if u.first < v.first OR ( u.first == v.first AND u.second <
-	 * v.second )
-	 */
+	// FIXME copied pasted
 	private Cell calculateKey(Cell state) {
 		double cost = Math.min(getRHS(state), getG(state));
 
 		Costs key = state.getKey();
-		key.setCostPlusHeuristic(cost + Geometry.heuristic(state, getStartCell()) + kM);
+		key.setCostPlusHeuristic(cost + Geometry.heuristic(state, getStartCell()) + 0.0);
 		key.setCost(cost);
 
 		return state;
