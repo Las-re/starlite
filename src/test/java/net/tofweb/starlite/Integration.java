@@ -16,12 +16,19 @@ public class Integration {
 		// set start and goal nodes
 		Cell startCell = new Cell(10, 7, 7);
 		Cell endCell = new Cell(1, 1, -1);
-		Pathfinder pathfinder = new Pathfinder(startCell, endCell);
+
+		CellSpace space = new CellSpace(startCell, endCell);
+
+		QueueBlockManager blockManager = new QueueBlockManager();
+
+		Pathfinder pathfinder = new Pathfinder(space, blockManager);
+		pathfinder.blockCell(new Cell(6, 6, 3));
+		pathfinder.blockCell(new Cell(6, 5, 4));
 
 		// set impassable nodes
-		CellSpace space = pathfinder.getSpace();
+		// CellSpace space = pathfinder.getSpace();
 		// space.blockCell(new Cell(6, 6, 6));
-		// space.blockCell(new Cell(6, 6, 4));
+
 		// space.blockCell(new Cell(2, 1, 1));
 		// space.blockCell(new Cell(2, 2, 1));
 

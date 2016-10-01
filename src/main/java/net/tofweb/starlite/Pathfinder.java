@@ -28,13 +28,13 @@ import java.util.List;
 public class Pathfinder {
 
 	private List<Cell> path = new ArrayList<Cell>();
-	private CellSpace space = new CellSpace();
-	private QueueBlockManager blockManager = new QueueBlockManager();
+	private CellSpace space;
+	private BlockManager blockManager;
 
-	public Pathfinder(Cell startCell, Cell goalCell) {
+	public Pathfinder(CellSpace space, BlockManager blockManager) {
 		super();
-		space.setGoalCell(goalCell);
-		space.setStartCell(startCell);
+		this.setSpace(space);
+		this.blockManager = blockManager;
 		blockManager.setSpace(space);
 	}
 

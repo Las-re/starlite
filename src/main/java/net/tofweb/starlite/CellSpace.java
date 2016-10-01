@@ -30,6 +30,16 @@ public class CellSpace {
 	private Cell startCell;
 	private Cell goalCell;
 
+	public CellSpace() {
+		super();
+	}
+
+	public CellSpace(Cell startCell, Cell goalCell) {
+		super();
+		this.goalCell = goalCell;
+		this.startCell = startCell;
+	}
+
 	public CellInfo getInfo(Cell cell) {
 		return cellHash.get(cell);
 	}
