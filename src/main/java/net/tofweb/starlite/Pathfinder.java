@@ -29,13 +29,13 @@ public class Pathfinder {
 
 	private List<Cell> path = new ArrayList<Cell>();
 	private CellSpace space = new CellSpace();
-	private QueueBlockManager observer = new QueueBlockManager();
+	private QueueBlockManager blockManager = new QueueBlockManager();
 
 	public Pathfinder(Cell startCell, Cell goalCell) {
 		super();
 		space.setGoalCell(goalCell);
 		space.setStartCell(startCell);
-		observer.setSpace(space);
+		blockManager.setSpace(space);
 	}
 
 	/**
@@ -86,7 +86,7 @@ public class Pathfinder {
 
 			for (Cell potentialNextCell : potentialNextCells) {
 
-				if (observer.isBlocked(potentialNextCell)) {
+				if (blockManager.isBlocked(potentialNextCell)) {
 					continue;
 				} else {
 					isTrapped = false;
@@ -130,7 +130,7 @@ public class Pathfinder {
 		LinkedList<Cell> successors = new LinkedList<Cell>();
 		Cell tempState;
 
-		if (observer.isBlocked(state)) {
+		if (blockManager.isBlocked(state)) {
 			// We cannot move into this cell
 			// Therefore it has no successor states
 			return successors;
@@ -171,32 +171,32 @@ public class Pathfinder {
 		Cell tempState;
 
 		tempState = new Cell(state.getX() + 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
-		if (!observer.isBlocked(tempState)) {
+		if (!blockManager.isBlocked(tempState)) {
 			predecessors.addFirst(tempState);
 		}
 
 		tempState = new Cell(state.getX(), state.getY() + 1, state.getZ(), new Costs(-1.0, -1.0));
-		if (!observer.isBlocked(tempState)) {
+		if (!blockManager.isBlocked(tempState)) {
 			predecessors.addFirst(tempState);
 		}
 
 		tempState = new Cell(state.getX() - 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
-		if (!observer.isBlocked(tempState)) {
+		if (!blockManager.isBlocked(tempState)) {
 			predecessors.addFirst(tempState);
 		}
 
 		tempState = new Cell(state.getX(), state.getY() - 1, state.getZ(), new Costs(-1.0, -1.0));
-		if (!observer.isBlocked(tempState)) {
+		if (!blockManager.isBlocked(tempState)) {
 			predecessors.addFirst(tempState);
 		}
 
 		tempState = new Cell(state.getX(), state.getY(), state.getZ() + 1, new Costs(-1.0, -1.0));
-		if (!observer.isBlocked(tempState)) {
+		if (!blockManager.isBlocked(tempState)) {
 			predecessors.addFirst(tempState);
 		}
 
 		tempState = new Cell(state.getX(), state.getY(), state.getZ() - 1, new Costs(-1.0, -1.0));
-		if (!observer.isBlocked(tempState)) {
+		if (!blockManager.isBlocked(tempState)) {
 			predecessors.addFirst(tempState);
 		}
 
@@ -227,7 +227,7 @@ public class Pathfinder {
 		}
 
 		if (!space.isClose(space.getG(state), space.getRHS(state))) {
-			observer.insertCell(state);
+			space.insertCell(state);
 		}
 	}
 

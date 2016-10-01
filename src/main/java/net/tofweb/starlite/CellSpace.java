@@ -26,6 +26,7 @@ import java.util.HashMap;
 public class CellSpace {
 
 	private HashMap<Cell, CellInfo> cellHash = new HashMap<Cell, CellInfo>();
+	private double kM = 0.0;
 	private Cell startCell;
 	private Cell goalCell;
 
@@ -61,6 +62,15 @@ public class CellSpace {
 		}
 
 		return cellHash.get(u).getG();
+	}
+
+	public void insertCell(Cell cell) {
+		// float csum;
+		cell = calculateKey(cell);
+		// csum = cell.getKey().hashCode();
+
+		// openHash.put(cell, csum);
+		// blockedCells.add(cell);
 	}
 
 	/*
@@ -130,12 +140,11 @@ public class CellSpace {
 		this.cellHash.put(goalCell, new CellInfo());
 	}
 
-	// FIXME copied pasted
-	private Cell calculateKey(Cell state) {
+	public Cell calculateKey(Cell state) {
 		double cost = Math.min(getRHS(state), getG(state));
 
 		Costs key = state.getKey();
-		key.setCostPlusHeuristic(cost + Geometry.heuristic(state, getStartCell()) + 0.0);
+		key.setCostPlusHeuristic(cost + Geometry.heuristic(state, getStartCell()) + kM);
 		key.setCost(cost);
 
 		return state;
