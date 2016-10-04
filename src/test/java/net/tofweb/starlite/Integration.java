@@ -14,16 +14,24 @@ public class Integration {
 	public void test() {
 
 		// set start and goal nodes
-		Cell startCell = new Cell(10, 7, 7);
-		Cell endCell = new Cell(1, 1, -1);
+		// Cell startCell = new Cell(10, 7, 7);
+		// Cell endCell = new Cell(1, 1, -1);
 
-		CellSpace space = new CellSpace(startCell, endCell);
+		// CellSpace space = new CellSpace(startCell, endCell);
+		CellSpace space = new CellSpace();
 
-		QueueBlockManager blockManager = new QueueBlockManager();
+		// Cell goalCell = space.makeNewCell(1, 1, -1);
+		space.setGoalCell(1, 1, -1);
+		space.setStartCell(10, 7, 7);
 
-		Pathfinder pathfinder = new Pathfinder(space, blockManager);
-		pathfinder.blockCell(new Cell(6, 6, 3));
-		pathfinder.blockCell(new Cell(6, 5, 4));
+		Cell b1 = space.makeNewCell(6, 6, 3);
+		Cell b2 = space.makeNewCell(6, 5, 4);
+
+		QueueBlockManager blockManager = new QueueBlockManager(space);
+		blockManager.blockCell(b1);
+		blockManager.blockCell(b2);
+
+		Pathfinder pathfinder = new Pathfinder(blockManager);
 
 		// set impassable nodes
 		// CellSpace space = pathfinder.getSpace();

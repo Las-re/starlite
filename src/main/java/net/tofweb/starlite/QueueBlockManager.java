@@ -1,12 +1,13 @@
 package net.tofweb.starlite;
 
-public class QueueBlockManager implements BlockManager {
+public class QueueBlockManager extends BlockManager {
 
-	// private PriorityQueue<Cell> blockedCells = new PriorityQueue<Cell>();
-	// private HashMap<Cell, Float> openHash = new HashMap<Cell, Float>();
-	private CellSpace space;
+	public QueueBlockManager(CellSpace space) {
+		super(space);
+	}
 
 	public boolean isBlocked(Cell state) {
+		CellSpace space = super.getSpace();
 		CellInfo info = space.getInfo(state);
 		if (info == null) {
 			return false;
@@ -15,12 +16,21 @@ public class QueueBlockManager implements BlockManager {
 		return (info.getCost() < 0);
 	}
 
-	public CellSpace getSpace() {
-		return space;
-	}
+	/**
+	 * Used to be updateCell, called from Main
+	 * 
+	 * @param blockedCell
+	 */
+	public void blockCell(Cell blockedCell) {
+		CellSpace space = super.getSpace();
 
-	public void setSpace(CellSpace space) {
-		this.space = space;
+		if ((blockedCell.equals(space.getStartCell())) || (blockedCell.equals(space.getGoalCell()))) {
+			return;
+		}
+
+		double cost = -1;
+		space.makeNewCell(blockedCell);
+		space.updateCellCost(blockedCell, cost);
 	}
 
 }

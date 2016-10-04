@@ -1,11 +1,18 @@
 package net.tofweb.starlite;
 
-public interface BlockManager {
+public abstract class BlockManager {
 
-	boolean isBlocked(Cell cell);
+	protected CellSpace space;
 
-	void setSpace(CellSpace space);
+	public BlockManager(CellSpace space) {
+		super();
+		this.space = space;
+	}
 
-	// void insertCell(Cell cell);
+	public abstract boolean isBlocked(Cell cell);
+
+	public CellSpace getSpace() {
+		return space;
+	}
 
 }

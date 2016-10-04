@@ -34,19 +34,19 @@ public class Cell implements Comparable<Cell> {
 		super();
 	}
 
-	public Cell(int x, int y, int z) {
-		super();
-		this.x = x;
-		this.y = y;
-		this.z = z;
-	}
-
-	public Cell(int x, int y, int z, Costs k) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.key = k;
-	}
+	// public Cell(int x, int y, int z) {
+	// super();
+	// this.x = x;
+	// this.y = y;
+	// this.z = z;
+	// }
+	//
+	// public Cell(int x, int y, int z, Costs k) {
+	// this.x = x;
+	// this.y = y;
+	// this.z = z;
+	// this.key = k;
+	// }
 
 	public Cell(Cell other) {
 		this.x = other.x;

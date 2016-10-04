@@ -1,6 +1,7 @@
 package net.tofweb.starlite;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 /*
  * @author daniel beard
@@ -40,6 +41,40 @@ public class CellSpace {
 		this.startCell = startCell;
 	}
 
+	/*
+	 * Returns a list of successor states for state u, since this is an 8-way
+	 * graph this list contains all of a cells neighbours. Unless the cell is
+	 * occupied, in which case it has no successors.
+	 */
+
+	/*
+	 * As per [S. Koenig, 2002]
+	 */
+	public void updateVertex(Cell cell) {
+		LinkedList<Cell> successors = new LinkedList<Cell>();
+
+		if (!cell.equals(getGoalCell())) {
+			successors = getSuccessors(cell);
+			double tmp = Double.POSITIVE_INFINITY;
+			double tmp2;
+
+			for (Cell successor : successors) {
+				tmp2 = getG(successor) + Geometry.calcCostToMove(cell, successor);
+				if (tmp2 < tmp) {
+					tmp = tmp2;
+				}
+			}
+
+			if (!isClose(getRHS(cell), tmp)) {
+				setRHS(cell, tmp);
+			}
+		}
+
+		if (!isClose(getG(cell), getRHS(cell))) {
+			insertCell(cell);
+		}
+	}
+
 	public CellInfo getInfo(Cell cell) {
 		return cellHash.get(cell);
 	}
@@ -48,6 +83,11 @@ public class CellSpace {
 	 * Returns the rhs value for the provided state
 	 */
 	public double getRHS(Cell state) {
+
+		if (goalCell == null) {
+			throw new RuntimeException("Goal cell not set");
+		}
+
 		if (state == goalCell) {
 			return 0;
 		}
@@ -67,6 +107,11 @@ public class CellSpace {
 	 * Returns the g value for the provided state
 	 */
 	public double getG(Cell u) {
+
+		if (goalCell == null) {
+			throw new RuntimeException("Goal cell not set");
+		}
+
 		if (cellHash.get(u) == null) {
 			return Geometry.heuristic(u, goalCell);
 		}
@@ -99,19 +144,109 @@ public class CellSpace {
 		cellHash.get(state).setRhs(rhs);
 	}
 
+	public LinkedList<Cell> getSuccessors(Cell state) {
+		LinkedList<Cell> successors = new LinkedList<Cell>();
+		Cell tempState;
+
+		// Generate the successors, starting at the immediate right and moving
+		// in a clockwise manner
+		tempState = makeNewCell(state.getX() + 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
+		successors.addFirst(tempState);
+
+		tempState = makeNewCell(state.getX(), state.getY() + 1, state.getZ(), new Costs(-1.0, -1.0));
+		successors.addFirst(tempState);
+
+		tempState = makeNewCell(state.getX() - 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
+		successors.addFirst(tempState);
+
+		tempState = makeNewCell(state.getX(), state.getY() - 1, state.getZ(), new Costs(-1.0, -1.0));
+		successors.addFirst(tempState);
+
+		// Up one z level
+		tempState = makeNewCell(state.getX(), state.getY(), state.getZ() + 1, new Costs(-1.0, -1.0));
+		successors.addFirst(tempState);
+
+		// Down one z level
+		tempState = makeNewCell(state.getX(), state.getY(), state.getZ() - 1, new Costs(-1.0, -1.0));
+		successors.addFirst(tempState);
+
+		return successors;
+	}
+
+	/*
+	 * Returns a list of all the predecessor states for state u. Since this is
+	 * for an 8-way connected graph, the list contains all the neighbours for
+	 * state u. Occupied neighbours are not added to the list
+	 */
+	public LinkedList<Cell> getPredecessors(Cell state) {
+		LinkedList<Cell> predecessors = new LinkedList<Cell>();
+		Cell tempState;
+
+		tempState = makeNewCell(state.getX() + 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
+		predecessors.addFirst(tempState);
+
+		tempState = makeNewCell(state.getX(), state.getY() + 1, state.getZ(), new Costs(-1.0, -1.0));
+		predecessors.addFirst(tempState);
+
+		tempState = makeNewCell(state.getX() - 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
+		predecessors.addFirst(tempState);
+
+		tempState = makeNewCell(state.getX(), state.getY() - 1, state.getZ(), new Costs(-1.0, -1.0));
+		predecessors.addFirst(tempState);
+
+		tempState = makeNewCell(state.getX(), state.getY(), state.getZ() + 1, new Costs(-1.0, -1.0));
+		predecessors.addFirst(tempState);
+
+		tempState = makeNewCell(state.getX(), state.getY(), state.getZ() - 1, new Costs(-1.0, -1.0));
+		predecessors.addFirst(tempState);
+
+		return predecessors;
+	}
+
+	public Cell makeNewCell(int x, int y, int z) {
+		return makeNewCell(x, y, z, null);
+	}
+
+	public Cell makeNewCell(int x, int y, int z, Costs k) {
+
+		Cell state = new Cell();
+		state.setX(x);
+		state.setY(y);
+		state.setZ(z);
+		state.setKey(k);
+
+		return makeNewCell(state);
+	}
+
 	/*
 	 * Checks if a cell is in the hash table, if not it adds it in.
 	 */
-	public void makeNewCell(Cell state) {
+	public Cell makeNewCell(Cell state) {
 		if (cellHash.get(state) != null) {
-			return;
+			return state;
 		}
 
 		CellInfo tmp = new CellInfo();
+
+		if (goalCell == null) {
+			throw new RuntimeException("Goal cell not set");
+		}
+
 		double costToGoal = Geometry.heuristic(state, goalCell);
 		tmp.setRhs(costToGoal);
 		tmp.setG(costToGoal);
 		cellHash.put(state, tmp);
+
+		System.out.println(state);
+
+		Costs key = state.getKey();
+		if (key != null && !key.equals(new Costs(-1.0, -1.0))) {
+			updateVertex(state);
+		}
+
+		calculateKey(state);
+
+		return state;
 	}
 
 	/*
@@ -129,8 +264,13 @@ public class CellSpace {
 		return startCell;
 	}
 
-	public void setStartCell(Cell startCell) {
-		this.startCell = startCell;
+	public void setStartCell(int x, int y, int z) {
+		// this.startCell = makeNewCell(startCell);
+		Cell cell = new Cell();
+		cell.setX(x);
+		cell.setY(y);
+		cell.setZ(z);
+		this.startCell = cell;
 
 		CellInfo startCellInfo = new CellInfo();
 		double totalPathCost = Geometry.heuristic(startCell, goalCell);
@@ -145,16 +285,33 @@ public class CellSpace {
 		return goalCell;
 	}
 
-	public void setGoalCell(Cell goalCell) {
-		this.goalCell = goalCell;
+	public void setGoalCell(int x, int y, int z) {
+		Cell cell = new Cell();
+		cell.setX(x);
+		cell.setY(y);
+		cell.setZ(z);
+
+		this.goalCell = cell;
 		this.cellHash.put(goalCell, new CellInfo());
 	}
 
 	public Cell calculateKey(Cell state) {
+
+		Cell startCell = getStartCell();
+
+		if (startCell == null) {
+			throw new RuntimeException("Start cell not set");
+		}
+
 		double cost = Math.min(getRHS(state), getG(state));
 
 		Costs key = state.getKey();
-		key.setCostPlusHeuristic(cost + Geometry.heuristic(state, getStartCell()) + kM);
+
+		if (key == null) {
+			key = new Costs(0.0, 0.0);
+		}
+
+		key.setCostPlusHeuristic(cost + Geometry.heuristic(state, startCell) + kM);
 		key.setCost(cost);
 
 		return state;
