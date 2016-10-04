@@ -28,13 +28,11 @@ import java.util.List;
 public class Pathfinder {
 
 	private List<Cell> path = new ArrayList<Cell>();
-	private CellSpace space;
 	private BlockManager blockManager;
 
 	public Pathfinder(BlockManager blockManager) {
 		super();
 		this.blockManager = blockManager;
-		this.setSpace(blockManager.getSpace());
 	}
 
 	/**
@@ -47,6 +45,7 @@ public class Pathfinder {
 	public boolean findPath() {
 		path.clear();
 
+		CellSpace space = blockManager.getSpace();
 		LinkedList<Cell> potentialNextCells = new LinkedList<Cell>();
 		Cell currentCell = space.getStartCell();
 
@@ -111,13 +110,4 @@ public class Pathfinder {
 	public void setPath(List<Cell> path) {
 		this.path = path;
 	}
-
-	public CellSpace getSpace() {
-		return space;
-	}
-
-	public void setSpace(CellSpace space) {
-		this.space = space;
-	}
-
 }
