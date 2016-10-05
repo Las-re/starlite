@@ -1,14 +1,20 @@
 package net.tofweb.starlite;
 
-/*
- * @author Lynn Owens
- * https://github.com/LynnOwens
+/**
+ * CellInfo is a bean which encapsulates the D* Lite Cell values as specified by
+ * <a href="http://idm-lab.org/bib/abstracts/papers/aaai02b.pdf">Sven Koenig</a>
+ * 
+ * @version .9
+ * @since .9
  */
 public class CellInfo {
 	private double g;
 	private double rhs;
 	private double cost;
 
+	/**
+	 * Returns a blank CellInfo with the default cost.
+	 */
 	public CellInfo() {
 		super();
 		this.cost = Cell.DEFAULT_COST;

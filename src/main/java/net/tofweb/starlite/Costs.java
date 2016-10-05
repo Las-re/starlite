@@ -1,13 +1,26 @@
 package net.tofweb.starlite;
 
+/**
+ * Costs is a tuple of Doubles which represent a Cell cost and its cost plus the
+ * heuristically calculated cost.
+ *
+ * @version .9
+ * @since .9
+ */
 public class Costs {
 
 	private Double costPlusHeuristic;
 	private Double cost;
 
-	public Costs(Double object1, Double object2) {
-		this.costPlusHeuristic = object1;
-		this.cost = object2;
+	/**
+	 * Return a Costs of the two provided Doubles.
+	 * 
+	 * @param costPlusHeuristic
+	 * @param cost
+	 */
+	public Costs(Double costPlusHeuristic, Double cost) {
+		this.costPlusHeuristic = costPlusHeuristic;
+		this.cost = cost;
 	}
 
 	public Double getCostPlusHeuristic() {

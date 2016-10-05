@@ -1,48 +1,37 @@
 package net.tofweb.starlite;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
-/*
- * @author daniel beard
- * http://danielbeard.wordpress.com
- * http://github.com/paintstripper
- * https://github.com/daniel-beard/DStarLiteJava
- *
- * Copyright (C) 2012 Daniel Beard
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+/**
+ * Finds a path through the specified BlockManager controlled CellSpace.
  * 
- * @author Lynn Owens
- * https://github.com/LynnOwens
+ * @version .9
+ * @since .9
  */
 public class Pathfinder {
 
-	private List<Cell> path = new ArrayList<Cell>();
+	private Path path = new Path();
 	private BlockManager blockManager;
 
+	/**
+	 * Creates a Pathfinder with the specified BlockManager.
+	 * 
+	 * @param blockManager
+	 */
 	public Pathfinder(BlockManager blockManager) {
 		super();
 		this.blockManager = blockManager;
 	}
 
 	/**
-	 * Find a path to the goal
+	 * Find and returns a path to the goal.
 	 * 
-	 * Returns true if a path is found, false otherwise
+	 * The returned path may not be complete, meaning that it was not able to
+	 * find a path to the goal. The Path should be checked for completion.
 	 * 
-	 * @return
+	 * @return Path The discovered Path
 	 */
-	public boolean findPath() {
+	public Path findPath() {
 		path.clear();
 
 		CellSpace space = blockManager.getSpace();
@@ -50,7 +39,7 @@ public class Pathfinder {
 		Cell currentCell = space.getStartCell();
 
 		if (space.getG(space.getStartCell()) == Double.POSITIVE_INFINITY) {
-			return false;
+			return path;
 		}
 
 		boolean isTrapped = false;
@@ -60,7 +49,7 @@ public class Pathfinder {
 			potentialNextCells = space.getSuccessors(currentCell);
 
 			if (potentialNextCells.isEmpty()) {
-				return false;
+				return path;
 			}
 
 			double minimumCost = Double.POSITIVE_INFINITY;
@@ -97,17 +86,13 @@ public class Pathfinder {
 			}
 		}
 
-		if (!isTrapped)
+		if (!isTrapped) {
 			path.add(space.getGoalCell());
+		}
 
-		return !isTrapped;
-	}
+		path.setComplete(blockManager.getSpace().getGoalCell().equals(path.getLast()));
 
-	public List<Cell> getPath() {
 		return path;
 	}
 
-	public void setPath(List<Cell> path) {
-		this.path = path;
-	}
 }
