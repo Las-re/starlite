@@ -63,7 +63,7 @@ public class Pathfinder {
 					isTrapped = false;
 				}
 
-				double costToMove = Geometry.calcCostToMove(currentCell, potentialNextCell);
+				double costToMove = Geometry.euclideanDistance(currentCell, potentialNextCell);
 				double euclideanDistance = Geometry.euclideanDistance(potentialNextCell, space.getGoalCell())
 						+ Geometry.euclideanDistance(space.getStartCell(), potentialNextCell);
 				costToMove += space.getG(potentialNextCell);

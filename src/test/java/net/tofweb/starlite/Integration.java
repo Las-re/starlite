@@ -17,7 +17,7 @@ public class Integration {
 		space.setGoalCell(1, 1, -1);
 		space.setStartCell(10, 7, 7);
 
-		QueueBlockManager blockManager = new QueueBlockManager(space);
+		CostBlockManager blockManager = new CostBlockManager(space);
 		blockManager.blockCell(space.makeNewCell(6, 6, 3));
 		blockManager.blockCell(space.makeNewCell(6, 5, 4));
 

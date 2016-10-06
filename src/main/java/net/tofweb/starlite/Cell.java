@@ -6,7 +6,7 @@ package net.tofweb.starlite;
  * @version .9
  * @since .9
  */
-public class Cell implements Comparable<Cell> {
+public class Cell {
 
 	public static final Double BILLIONTH = 0.000001;
 	public static final double DEFAULT_COST = 1.0;
@@ -65,25 +65,6 @@ public class Cell implements Comparable<Cell> {
 
 	public void setKey(Costs key) {
 		this.key = key;
-	}
-
-	/**
-	 * Compares two Cells on the basis of their Costs. Required for
-	 * PriorityQueue.
-	 * 
-	 * @param otherCell
-	 * @return
-	 */
-	public int compareTo(Cell otherCell) {
-		if (key.getCostPlusHeuristic() - BILLIONTH > otherCell.key.getCostPlusHeuristic())
-			return 1;
-		else if (key.getCostPlusHeuristic() < otherCell.key.getCostPlusHeuristic() - BILLIONTH)
-			return -1;
-		if (key.getCost() > otherCell.key.getCost())
-			return 1;
-		else if (key.getCost() < otherCell.key.getCost())
-			return -1;
-		return 0;
 	}
 
 	@Override

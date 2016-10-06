@@ -21,7 +21,11 @@ public class CellInfo {
 	}
 
 	/**
-	 * Cost thus far from the start to current node
+	 * Get the g value.
+	 * 
+	 * The g value, as specified by
+	 * <a href="http://idm-lab.org/bib/abstracts/papers/aaai02b.pdf">Sven
+	 * Koenig</a>, is the cost of the path from the start Cell to this Cell.
 	 * 
 	 * @return
 	 */
@@ -34,7 +38,11 @@ public class CellInfo {
 	}
 
 	/**
-	 * Right Hand Side, heuristic. g + estimated cost to move to this cell
+	 * Get the Right Hand Side value.
+	 * 
+	 * The Right Hand Side value, as specified by
+	 * <a href="http://idm-lab.org/bib/abstracts/papers/aaai02b.pdf">Sven
+	 * Koenig</a>, is the g value + the estimated cost to move to this Cell.
 	 * 
 	 * @return
 	 */
@@ -47,7 +55,7 @@ public class CellInfo {
 	}
 
 	/**
-	 * The cost of the cell
+	 * Get the cost of this Cell.
 	 * 
 	 * @return
 	 */
