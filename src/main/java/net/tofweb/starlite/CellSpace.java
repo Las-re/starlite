@@ -55,23 +55,21 @@ public class CellSpace {
 	 * <a href="http://idm-lab.org/bib/abstracts/papers/aaai02b.pdf">Sven
 	 * Koenig</a>, is the cost of the path from the start Cell to this Cell.
 	 * 
-	 * @param u
+	 * @param cell
 	 * @return
 	 */
-	public double getG(Cell u) {
-		if (u == null) {
-			return 0;
+	public Double getG(Cell cell) {
+		if (cell == null) {
+			return null;
 		}
 
-		if (goalCell == null) {
-			throw new RuntimeException("Goal cell not set");
+		CellInfo info = cellHash.get(cell);
+
+		if (info == null) {
+			return null;
 		}
 
-		if (cellHash.get(u) == null) {
-			return Geometry.euclideanDistance(u, goalCell);
-		}
-
-		return cellHash.get(u).getG();
+		return info.getG();
 	}
 
 	/**

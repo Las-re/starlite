@@ -1,5 +1,6 @@
 package net.tofweb.starlite;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -16,6 +17,8 @@ public class CellSpaceTest {
 	Double costA = 1.0;
 	Double gA = 12.12435565298214;
 	Double rhsA = 12.12435565298214;
+
+	Double gB = 17.320508075688775;
 
 	@Before
 	public void setup() {
@@ -70,52 +73,24 @@ public class CellSpaceTest {
 		returnedInfo = space.getInfo(cell);
 		assertNotNull(returnedInfo);
 		assertTrue(2 == returnedInfo.getCost());
-
-		// Unusual conditions
-		space.updateCellCost(cell, Double.MAX_VALUE);
-		returnedInfo = space.getInfo(cell);
-		assertNotNull(returnedInfo);
-		assertTrue(Double.MAX_VALUE == returnedInfo.getCost());
-
-		space.updateCellCost(cell, Double.MIN_VALUE);
-		returnedInfo = space.getInfo(cell);
-		assertNotNull(returnedInfo);
-		assertTrue(Double.MIN_VALUE == returnedInfo.getCost());
-
-		space.updateCellCost(cell, Double.NEGATIVE_INFINITY);
-		returnedInfo = space.getInfo(cell);
-		assertNotNull(returnedInfo);
-		assertTrue(Double.NEGATIVE_INFINITY == returnedInfo.getCost());
-
-		space.updateCellCost(cell, Double.POSITIVE_INFINITY);
-		returnedInfo = space.getInfo(cell);
-		assertNotNull(returnedInfo);
-		assertTrue(Double.POSITIVE_INFINITY == returnedInfo.getCost());
 	}
 
 	@Test
 	public void testGetG() {
 		Cell cell = space.makeNewCell(3, 3, 3);
-		CellInfo returnedInfo = space.getInfo(cell);
 
 		// Existing state
-		assertNotNull(returnedInfo);
-		assertTrue(gA == returnedInfo.getG());
+		assertEquals(gA, space.getG(cell));
 
-		// Null condition
+		// Null conditions
 		assertNull(space.getG(null));
+		assertNull(space.getG(new Cell()));
 
-		/*
-		 * Illegal argument case - CellSpace managed cells should be made with
-		 * makeCell
-		 */
 		Cell illegalCell = new Cell();
-		// assertNull(space.getG(illegalCell));
-		//
-		// illegalCell.setX(100);
-		// illegalCell.setY(100);
-		// illegalCell.setZ(100);
-		// assertNull(space.getInfo(illegalCell));
+		illegalCell.setX(100);
+		illegalCell.setY(100);
+		illegalCell.setZ(100);
+		assertNull(space.getInfo(illegalCell));
 	}
 
 	@Test
