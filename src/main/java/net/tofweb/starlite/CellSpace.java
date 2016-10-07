@@ -41,6 +41,10 @@ public class CellSpace {
 	 * @param cost
 	 */
 	public void updateCellCost(Cell cell, double cost) {
+		if (cell == null) {
+			return;
+		}
+
 		cellHash.get(cell).setCost(cost);
 	}
 
@@ -55,6 +59,10 @@ public class CellSpace {
 	 * @return
 	 */
 	public double getG(Cell u) {
+		if (u == null) {
+			return 0;
+		}
+
 		if (goalCell == null) {
 			throw new RuntimeException("Goal cell not set");
 		}
