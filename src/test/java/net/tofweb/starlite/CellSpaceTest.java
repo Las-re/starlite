@@ -1,10 +1,12 @@
 package net.tofweb.starlite;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+
+import java.util.LinkedList;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,8 +19,13 @@ public class CellSpaceTest {
 	Double costA = 1.0;
 	Double gA = 12.12435565298214;
 	Double rhsA = 12.12435565298214;
-
 	Double gB = 17.320508075688775;
+	Double gC = 8.774964387392123;
+	Double costPlusHeuristicA = 26.302685732130897;
+	Double costB = 3.7416573867739413;
+	Double gD = 3.7416573867739413;
+	Double rhsD = 4.0;
+	Double gE = 3.7416573867739413;
 
 	@Before
 	public void setup() {
@@ -33,9 +40,9 @@ public class CellSpaceTest {
 		Cell cell = space.makeNewCell(3, 3, 3);
 		CellInfo returnedInfo = space.getInfo(cell);
 		assertNotNull(returnedInfo);
-		assertTrue(costA == returnedInfo.getCost());
-		assertTrue(gA == returnedInfo.getG());
-		assertTrue(rhsA == returnedInfo.getRhs());
+		assertEquals(costA, returnedInfo.getCost());
+		assertEquals(gA, returnedInfo.getG());
+		assertEquals(rhsA, returnedInfo.getRhs());
 
 		// Null condition
 		assertNull(space.getInfo(null));
@@ -95,52 +102,98 @@ public class CellSpaceTest {
 
 	@Test
 	public void testMakeNewCellIntIntInt() {
-		fail("Not yet implemented");
+		Cell cell = space.makeNewCell(5, 4, 6);
+		assertNotNull(cell);
+
+		CellInfo info = space.getInfo(cell);
+		assertNotNull(info);
+		assertEquals(gC, info.getG());
+		assertEquals(gC, info.getRhs());
+		assertEquals(costA, info.getCost());
 	}
 
 	@Test
 	public void testMakeNewCellIntIntIntCosts() {
-		fail("Not yet implemented");
-	}
+		Costs k = new Costs(3.14, 21.0);
+		Cell cell = space.makeNewCell(7, 8, 9, k);
+		assertNotNull(cell);
+		assertEquals(costPlusHeuristicA, cell.getKey().getCostPlusHeuristic());
+		assertEquals(costB, cell.getKey().getCost());
 
-	@Test
-	public void testMakeNewCellCell() {
-		fail("Not yet implemented");
+		CellInfo info = space.getInfo(cell);
+		assertNotNull(info);
+		assertEquals(gD, info.getG());
+		assertEquals(rhsD, info.getRhs());
+		assertEquals(costA, info.getCost());
 	}
 
 	@Test
 	public void testSetStartCell() {
-		fail("Not yet implemented");
-	}
+		space.setStartCell(7, 8, 9);
+		Cell startCell = space.getStartCell();
+		assertNotNull(startCell);
+		assertEquals(7, startCell.getX());
+		assertEquals(8, startCell.getY());
+		assertEquals(9, startCell.getZ());
 
-	@Test
-	public void testGetStartCell() {
-		fail("Not yet implemented");
+		CellInfo info = space.getInfo(startCell);
+		assertNotNull(info);
+		assertEquals(gE, info.getG());
+		assertEquals(gE, info.getRhs());
+		assertEquals(costA, info.getCost());
 	}
 
 	@Test
 	public void testSetGoalCell() {
-		fail("Not yet implemented");
-	}
+		space.setGoalCell(10, 11, 12);
+		Cell goalCell = space.getGoalCell();
+		assertNotNull(goalCell);
+		assertEquals(10, goalCell.getX());
+		assertEquals(11, goalCell.getY());
+		assertEquals(12, goalCell.getZ());
 
-	@Test
-	public void testGetGoalCell() {
-		fail("Not yet implemented");
+		CellInfo info = space.getInfo(goalCell);
+		assertNotNull(info);
+		assertEquals(Double.valueOf("0"), info.getG());
+		assertEquals(Double.valueOf("0"), info.getRhs());
+		assertEquals(costA, info.getCost());
 	}
 
 	@Test
 	public void testIsClose() {
-		fail("Not yet implemented");
+		assertTrue(space.isClose(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY));
+		assertFalse(space.isClose(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY));
+		assertFalse(space.isClose(1.0, 2.0));
+		assertTrue(space.isClose(1.0, 1.000009));
+		assertFalse(space.isClose(1.0, 1.00001));
 	}
 
 	@Test
 	public void testGetSuccessors() {
-		fail("Not yet implemented");
+		Cell cell = space.makeNewCell(20, 20, 20);
+		LinkedList<Cell> neighbors = space.getPredecessors(cell);
+		assertNotNull(neighbors);
+		assertTrue(6 == neighbors.size());
+		assertEquals(20, neighbors.getFirst().getX());
+		assertEquals(20, neighbors.getFirst().getY());
+		assertEquals(19, neighbors.getFirst().getZ());
+		assertEquals(21, neighbors.getLast().getX());
+		assertEquals(20, neighbors.getLast().getY());
+		assertEquals(20, neighbors.getLast().getZ());
 	}
 
 	@Test
 	public void testGetPredecessors() {
-		fail("Not yet implemented");
+		Cell cell = space.makeNewCell(20, 20, 20);
+		LinkedList<Cell> neighbors = space.getPredecessors(cell);
+		assertNotNull(neighbors);
+		assertTrue(6 == neighbors.size());
+		assertEquals(20, neighbors.getFirst().getX());
+		assertEquals(20, neighbors.getFirst().getY());
+		assertEquals(19, neighbors.getFirst().getZ());
+		assertEquals(21, neighbors.getLast().getX());
+		assertEquals(20, neighbors.getLast().getY());
+		assertEquals(20, neighbors.getLast().getZ());
 	}
 
 }

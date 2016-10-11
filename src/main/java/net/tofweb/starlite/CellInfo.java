@@ -29,7 +29,7 @@ public class CellInfo {
 	 * 
 	 * @return
 	 */
-	public double getG() {
+	public Double getG() {
 		return g;
 	}
 
@@ -46,7 +46,7 @@ public class CellInfo {
 	 * 
 	 * @return
 	 */
-	public double getRhs() {
+	public Double getRhs() {
 		return rhs;
 	}
 
@@ -59,7 +59,7 @@ public class CellInfo {
 	 * 
 	 * @return
 	 */
-	public double getCost() {
+	public Double getCost() {
 		return cost;
 	}
 
