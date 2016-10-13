@@ -16,16 +16,16 @@ public class CellSpaceTest {
 	CellSpace space;
 
 	// Test values
-	Double costA = 1.0;
-	Double gA = 12.12435565298214;
-	Double rhsA = 12.12435565298214;
-	Double gB = 17.320508075688775;
-	Double gC = 8.774964387392123;
+	double costA = 1.0;
+	double gA = 12.12435565298214;
+	double rhsA = 12.12435565298214;
+	double gB = 17.320508075688775;
+	double gC = 8.774964387392123;
 	Double costPlusHeuristicA = 26.302685732130897;
-	Double costB = 3.7416573867739413;
-	Double gD = 3.7416573867739413;
-	Double rhsD = 4.0;
-	Double gE = 3.7416573867739413;
+	double costB = 3.7416573867739413;
+	double gD = 3.7416573867739413;
+	double rhsD = 4.0;
+	double gE = 3.7416573867739413;
 
 	@Before
 	public void setup() {
@@ -40,9 +40,9 @@ public class CellSpaceTest {
 		Cell cell = space.makeNewCell(3, 3, 3);
 		CellInfo returnedInfo = space.getInfo(cell);
 		assertNotNull(returnedInfo);
-		assertEquals(costA, returnedInfo.getCost());
-		assertEquals(gA, returnedInfo.getG());
-		assertEquals(rhsA, returnedInfo.getRhs());
+		assertTrue(costA == returnedInfo.getCost());
+		assertTrue(gA == returnedInfo.getG());
+		assertTrue(rhsA == returnedInfo.getRhs());
 
 		// Null condition
 		assertNull(space.getInfo(null));
@@ -87,11 +87,11 @@ public class CellSpaceTest {
 		Cell cell = space.makeNewCell(3, 3, 3);
 
 		// Existing state
-		assertEquals(gA, space.getG(cell));
+		assertTrue(gA == space.getG(cell));
 
 		// Null conditions
-		assertNull(space.getG(null));
-		assertNull(space.getG(new Cell()));
+		assertTrue(0.0 == space.getG(null));
+		assertTrue(0.0 == space.getG(new Cell()));
 
 		Cell illegalCell = new Cell();
 		illegalCell.setX(100);
@@ -107,9 +107,9 @@ public class CellSpaceTest {
 
 		CellInfo info = space.getInfo(cell);
 		assertNotNull(info);
-		assertEquals(gC, info.getG());
-		assertEquals(gC, info.getRhs());
-		assertEquals(costA, info.getCost());
+		assertTrue(gC == info.getG());
+		assertTrue(gC == info.getRhs());
+		assertTrue(costA == info.getCost());
 	}
 
 	@Test
@@ -118,13 +118,13 @@ public class CellSpaceTest {
 		Cell cell = space.makeNewCell(7, 8, 9, k);
 		assertNotNull(cell);
 		assertEquals(costPlusHeuristicA, cell.getKey().getCostPlusHeuristic());
-		assertEquals(costB, cell.getKey().getCost());
+		assertTrue(costB == cell.getKey().getCost());
 
 		CellInfo info = space.getInfo(cell);
 		assertNotNull(info);
-		assertEquals(gD, info.getG());
-		assertEquals(rhsD, info.getRhs());
-		assertEquals(costA, info.getCost());
+		assertTrue(gD == info.getG());
+		assertTrue(rhsD == info.getRhs());
+		assertTrue(costA == info.getCost());
 	}
 
 	@Test
@@ -138,9 +138,9 @@ public class CellSpaceTest {
 
 		CellInfo info = space.getInfo(startCell);
 		assertNotNull(info);
-		assertEquals(gE, info.getG());
-		assertEquals(gE, info.getRhs());
-		assertEquals(costA, info.getCost());
+		assertTrue(gE == info.getG());
+		assertTrue(gE == info.getRhs());
+		assertTrue(costA == info.getCost());
 	}
 
 	@Test
@@ -154,9 +154,9 @@ public class CellSpaceTest {
 
 		CellInfo info = space.getInfo(goalCell);
 		assertNotNull(info);
-		assertEquals(Double.valueOf("0"), info.getG());
-		assertEquals(Double.valueOf("0"), info.getRhs());
-		assertEquals(costA, info.getCost());
+		assertTrue(0.0 == info.getG());
+		assertTrue(0.0 == info.getRhs());
+		assertTrue(costA == info.getCost());
 	}
 
 	@Test

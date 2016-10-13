@@ -58,15 +58,15 @@ public class CellSpace {
 	 * @param cell
 	 * @return
 	 */
-	public Double getG(Cell cell) {
+	public double getG(Cell cell) {
 		if (cell == null) {
-			return null;
+			return 0.0;
 		}
 
 		CellInfo info = cellHash.get(cell);
 
 		if (info == null) {
-			return null;
+			return 0.0;
 		}
 
 		return info.getG();
