@@ -1,5 +1,6 @@
 package net.tofweb.starlite;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -19,10 +20,24 @@ public class CostBlockManagerTest {
 
 	@Test
 	public void test() {
+		CostBlockManager manager = new CostBlockManager(space);
 		Cell cell = space.makeNewCell(3, 3, 3);
+		assertFalse(manager.isBlocked(cell));
+
 		CellInfo returnedInfo = space.getInfo(cell);
 		assertNotNull(returnedInfo);
 		assertTrue(1.0 == returnedInfo.getCost());
 	}
 
+	@Test
+	public void testBlocked() {
+		CostBlockManager manager = new CostBlockManager(space);
+		Cell cell = space.makeNewCell(3, 3, 3);
+		manager.blockCell(cell);
+		assertTrue(manager.isBlocked(cell));
+
+		CellInfo returnedInfo = space.getInfo(cell);
+		assertNotNull(returnedInfo);
+		assertTrue(-1.0 == returnedInfo.getCost());
+	}
 }
