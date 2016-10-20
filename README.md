@@ -11,6 +11,7 @@ Starlite is a 3D implementation of Daniel Beard's 2D implementation.
 Javadoc comments are included in the source code
 
 ## Example
+```java
 CellSpace space = new CellSpace();
 space.setGoalCell(1, 1, -1);
 space.setStartCell(10, 7, 7);
@@ -22,6 +23,7 @@ blockManager.blockCell(space.makeNewCell(6, 5, 4));
 Pathfinder pathfinder = new Pathfinder(blockManager);
 
 Path path = pathfinder.findPath();
+```
 
 ## License
 Daniel Beard included the MIT licence in his source code.  As part of the re-write, that license has been placed in a separate file at the root of this repository. 
